@@ -1,0 +1,190 @@
+set(UNDO_REDO_FILES
+        objects/QCADUndoEntry.c
+        objects/QCADUndoEntry.h
+        objects/QCADUndoEntryGroup.c
+        objects/QCADUndoEntryGroup.h
+        selection_undo.c
+        selection_undo.h
+        )
+
+set(STDIO_FILEIO_FILES
+        fileio.c fileio.h
+        )
+
+set(OBJECT_FILES
+        objects/QCADCell.c
+        objects/QCADCell.h
+        objects/QCADCompoundDO.c
+        objects/QCADCompoundDO.h
+        objects/QCADDesignObject.c
+        objects/QCADDesignObject.h
+        objects/QCADDOContainer.c
+        objects/QCADDOContainer.h
+        objects/QCADLabel.c
+        objects/QCADLabel.h
+        objects/QCADLayer.c
+        objects/QCADLayer.h
+        objects/QCADRuler.c
+        objects/QCADRuler.h
+        objects/QCADStretchyObject.c
+        objects/QCADStretchyObject.h
+        objects/QCADSubstrate.c
+        objects/QCADSubstrate.h
+        )
+
+add_definitions(-DPACKAGE=\"QCADesigner\")
+add_definitions(-DVERSION="2.0.3")
+
+add_executable(QCADesigner
+        ${UNDO_REDO_FILES}
+        ${STDIO_FILEIO_FILES}
+        gtk_preamble.c                          gtk_preamble.h
+        about.c                                 about.h
+        actions.h
+        actions/action_handlers.h
+        actions/array.c                         actions/array.h
+        actions/pan.c                           actions/pan.h
+        actions/rotate.c                        actions/rotate.h
+        actions/select.c                        actions/select.h
+        bistable_properties_dialog.c            bistable_properties_dialog.h
+        bus_layout_dialog.c                     bus_layout_dialog.h
+        callback_helpers.h
+        callbacks.c                             callbacks.h
+        coherence_vector_properties_dialog.c    coherence_vector_properties_dialog.h
+        custom_widgets.c                        custom_widgets.h
+        design.c                                design.h
+        exp_array.c                             exp_array.h
+        exp_pixmap.c                            exp_pixmap.h
+        file_selection_window.c                 file_selection_window.h
+        fileio_helpers.c                        fileio_helpers.h
+        generic_utils.c                         generic_utils.h
+        global_consts.h
+        honeycomb_thresholds_dialog.c           honeycomb_thresholds_dialog.h
+        graph_dialog.c                          graph_dialog.h
+        graph_dialog_interface.c                graph_dialog_interface.h
+        graph_dialog_widget_data.c              graph_dialog_widget_data.h
+        graph_dialog_data.c                     graph_dialog_data.h
+        graph_dialog_callbacks.c                graph_dialog_callbacks.h
+        hsl2rgb.c                               hsl2rgb.h
+        interface.c                             interface.h
+        layer_mapping_dialog.c                  layer_mapping_dialog.h
+        layer_order_dialog.c                    layer_order_dialog.h
+        layer_properties_dialog.c               layer_properties_dialog.h
+        objects/mouse_handlers.c                objects/mouse_handlers.h
+        objects/mouse_handler_struct.h
+        objects/object_helpers.c                objects/object_helpers.h
+        objects/objects_debug.h
+
+        ${OBJECT_FILES}
+
+        objects/QCADClockCombo.c                objects/QCADClockCombo.h
+        objects/QCADCellRendererVT.c            objects/QCADCellRendererVT.h
+        objects/QCADCellRendererLayerList.c     objects/QCADCellRendererLayerList.h
+        objects/QCADTreeViewContainer.c         objects/QCADTreeViewContainer.h
+        objects/QCADPrintDialog.c               objects/QCADPrintDialog.h
+        print_properties_dialog.c               print_properties_dialog.h
+        print_graph_properties_dialog.c         print_graph_properties_dialog.h
+        print_properties_dialog_callbacks.h
+        print_properties_dialog_interface.c     print_properties_dialog_interface.h
+        print.c                                 print.h
+        print_util.c                            print_util.h
+        print_graph.c
+        qcadstock.h
+        scale_dialog.c                          scale_dialog.h
+        selection_renderer.c                    selection_renderer.h
+        sim_engine_setup_dialog.c               sim_engine_setup_dialog.h
+        support.c                               support.h
+        translate_selection_dialog.c            translate_selection_dialog.h
+        vector_table.c                          vector_table.h
+        vector_table_options_dialog.c           vector_table_options_dialog.h
+        vector_table_options_dialog_interface.c vector_table_options_dialog_interface.h
+        vector_table_options_dialog_callbacks.c vector_table_options_dialog_callbacks.h
+        vector_table_options_dialog_data.c      vector_table_options_dialog_data.h
+        recent_files.c                          recent_files.h
+        print_preview.c                         print_preview.h
+        bistable_simulation.c                   bistable_simulation.h
+        coherence_vector.c                      coherence_vector.h
+        simulation.c                            simulation.h
+        simulation_data.c                       simulation_data.h
+        main.c
+        )
+target_link_libraries(QCADesigner
+        gtk-win32-2.0 gdk-win32-2.0 gdi32 imm32 shell32 ole32 uuid pangowin32-1.0 pangocairo-1.0 pango-1.0
+        atk-1.0 cairo gdk_pixbuf-2.0 gio-2.0 gobject-2.0 glib-2.0 intl gthread-2.0
+        )
+target_compile_options(QCADesigner PUBLIC -DSTDIO_FILEIO -DUNDO_REDO -DGTK_GUI -DDESIGNER)
+#if(TARGET qcadesigner)
+#    add_definitions(-DSTDIO_FILEIO -DUNDO_REDO -DGTK_GUI -DDESIGNER)
+#endif(TARGET qcadesigner)
+
+
+add_executable(batch_sim
+        ${STDIO_FILEIO_FILES}
+        fileio_helpers.c                      fileio_helpers.h
+        custom_widgets.c                      custom_widgets.h
+
+        simulation.c                          simulation.h
+        simulation_data.c                     simulation_data.h
+        bistable_simulation.c                 bistable_simulation.h
+        coherence_vector.c                    coherence_vector.h
+
+        design.c                              design.h
+
+        ${OBJECT_FILES}
+
+        exp_array.c                           exp_array.h
+        objects/object_helpers.c              objects/object_helpers.h
+        hsl2rgb.c                             hsl2rgb.h
+        generic_utils.c                       generic_utils.h
+
+        graph_dialog_widget_data.c            graph_dialog_widget_data.h
+
+        main_batch_sim.c
+        )
+target_link_libraries(batch_sim m glib-2.0 intl gobject-2.0)
+target_compile_options(batch_sim PUBLIC -DSTDIO_FILEIO)
+#if(TARGET batch_sim)
+#    add_definitions(-DSTDIO_FILEIO)
+#endif(TARGET batch_sim)
+
+add_executable(graph_dialog
+        ${STDIO_FILEIO_FILES}
+        ${OBJECT_FILES}
+        gtk_preamble.c                        gtk_preamble.h
+        objects/QCADClockCombo.c              objects/QCADClockCombo.h
+        objects/QCADPrintDialog.c             objects/QCADPrintDialog.h
+        design.c                              design.h
+        objects/object_helpers.c              objects/object_helpers.h
+
+        graph_dialog.c                        graph_dialog.h
+        graph_dialog_interface.c              graph_dialog_interface.h
+        graph_dialog_widget_data.c            graph_dialog_widget_data.h
+        graph_dialog_data.c                   graph_dialog_data.h
+        graph_dialog_callbacks.c              graph_dialog_callbacks.h
+
+        generic_utils.c                       generic_utils.h
+        custom_widgets.c                      custom_widgets.h
+        exp_array.c                           exp_array.h
+        fileio_helpers.c                      fileio_helpers.h
+        exp_pixmap.c                          exp_pixmap.h
+        file_selection_window.c               file_selection_window.h
+        print.c                               print.h
+        print_util.c                          print_util.h
+        print_graph.c
+        print_graph_properties_dialog.c       print_graph_properties_dialog.h
+        support.c                             support.h
+        honeycomb_thresholds_dialog.c         honeycomb_thresholds_dialog.h
+        bus_layout_dialog.c                   bus_layout_dialog.h
+        print_preview.c                       print_preview.h
+        simulation_data.c                     simulation_data.h
+        hsl2rgb.c                             hsl2rgb.h
+        main_graph_dialog.c
+        )
+target_compile_options(graph_dialog PUBLIC -DSTDIO_FILEIO -DGTK_GUI)
+target_link_libraries(graph_dialog
+        m gtk-win32-2.0 gdk-win32-2.0 gdi32 imm32 shell32 ole32 uuid pangowin32-1.0 pangocairo-1.0
+        pango-1.0 atk-1.0 cairo gdk_pixbuf-2.0 gio-2.0 gobject-2.0 glib-2.0 intl gthread-2.0
+        )
+#if(TARGET graph_dialog)
+#    add_definitions(-DSTDIO_FILEIO -DGTK_GUI)
+#endif(TARGET graph_dialog)
