@@ -113,9 +113,6 @@ target_link_libraries(QCADesigner
         atk-1.0 cairo gdk_pixbuf-2.0 gio-2.0 gobject-2.0 glib-2.0 intl gthread-2.0
         )
 target_compile_options(QCADesigner PUBLIC -DSTDIO_FILEIO -DUNDO_REDO -DGTK_GUI -DDESIGNER)
-#if(TARGET qcadesigner)
-#    add_definitions(-DSTDIO_FILEIO -DUNDO_REDO -DGTK_GUI -DDESIGNER)
-#endif(TARGET qcadesigner)
 
 
 add_executable(batch_sim
@@ -143,9 +140,6 @@ add_executable(batch_sim
         )
 target_link_libraries(batch_sim m glib-2.0 intl gobject-2.0)
 target_compile_options(batch_sim PUBLIC -DSTDIO_FILEIO)
-#if(TARGET batch_sim)
-#    add_definitions(-DSTDIO_FILEIO)
-#endif(TARGET batch_sim)
 
 add_executable(graph_dialog
         ${STDIO_FILEIO_FILES}
@@ -185,31 +179,27 @@ target_link_libraries(graph_dialog
         m gtk-win32-2.0 gdk-win32-2.0 gdi32 imm32 shell32 ole32 uuid pangowin32-1.0 pangocairo-1.0
         pango-1.0 atk-1.0 cairo gdk_pixbuf-2.0 gio-2.0 gobject-2.0 glib-2.0 intl gthread-2.0
         )
-#if(TARGET graph_dialog)
-#    add_definitions(-DSTDIO_FILEIO -DGTK_GUI)
-#endif(TARGET graph_dialog)
 
+#########################################################################
 add_executable(pfmain
         ${STDIO_FILEIO_FILES}
-        fileio_helpers.c                      fileio_helpers.h
-        custom_widgets.c                      custom_widgets.h
+        fileio_helpers.c
+        custom_widgets.c
 
-        simulation.c                          simulation.h
-        simulation_data.c                     simulation_data.h
-        bistable_simulation.c                 bistable_simulation.h
-        coherence_vector.c                    coherence_vector.h
+        simulation.c
+        simulation_data.c
+        bistable_simulation.c
+        coherence_vector.c
+        Vector_table.c
 
-        design.c                              design.h
+        design.c
 
         ${OBJECT_FILES}
-
-        exp_array.c                           exp_array.h
         objects/object_helpers.c              objects/object_helpers.h
-        hsl2rgb.c                             hsl2rgb.h
-        generic_utils.c                       generic_utils.h
 
-#        graph_dialog_widget_data.c            graph_dialog_widget_data.h
-        Vector_table.c                        Vector_table.h
+        exp_array.c
+        hsl2rgb.c
+        generic_utils.c
 
         main_pf.c
         )
