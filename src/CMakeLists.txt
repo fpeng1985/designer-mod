@@ -208,7 +208,8 @@ add_executable(pfmain
         hsl2rgb.c                             hsl2rgb.h
         generic_utils.c                       generic_utils.h
 
-        graph_dialog_widget_data.c            graph_dialog_widget_data.h
+#        graph_dialog_widget_data.c            graph_dialog_widget_data.h
+        Vector_table.c                        Vector_table.h
 
         main_pf.c
         )

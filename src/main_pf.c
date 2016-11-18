@@ -17,14 +17,17 @@
 
 #include "objects/QCADDOContainer.h"
 #include "objects/QCADLayer.h"
+#include "objects/QCADCell.h"
+#include "exp_array.h"
 
 
 int main(int argc, char **argv) {
-    gchar *file = "c:\\msys64\\home\\fpeng\\layer.qca";
 
     QCADSubstrate *sub = NULL;
     DESIGN *design = NULL;
     design = design_new(&sub);
+
+    VectorTable *pvt = NULL;
 
     QCADLayer *layer = QCAD_LAYER(g_list_first(design->lstLayers->data));
 
@@ -32,6 +35,7 @@ int main(int argc, char **argv) {
 
     cell = QCAD_CELL(qcad_cell_new(200, 200));
     qcad_cell_set_function(cell, QCAD_CELL_INPUT);
+    qcad_cell_set_label(cell, "A");
     qcad_do_container_add(QCAD_DO_CONTAINER(layer), QCAD_DESIGN_OBJECT(cell));
 
     cell = QCAD_CELL(qcad_cell_new(220, 200));
@@ -39,21 +43,33 @@ int main(int argc, char **argv) {
 
     cell = QCAD_CELL(qcad_cell_new(240,200));
     qcad_cell_set_function(cell, QCAD_CELL_OUTPUT);
+    qcad_cell_set_label(cell, "F");
     qcad_do_container_add(QCAD_DO_CONTAINER(layer), QCAD_DESIGN_OBJECT(cell));
 
     cell = QCAD_CELL(qcad_cell_new(220, 220));
+    qcad_cell_set_function(cell, QCAD_CELL_INPUT);
+    qcad_cell_set_label(cell, "B");
     qcad_do_container_add(QCAD_DO_CONTAINER(layer), QCAD_DESIGN_OBJECT(cell));
 
     cell = QCAD_CELL(qcad_cell_new(220, 180));
+    qcad_cell_set_function(cell, QCAD_CELL_INPUT);
+    qcad_cell_set_label(cell, "C");
     qcad_do_container_add(QCAD_DO_CONTAINER(layer), QCAD_DESIGN_OBJECT(cell));
 
+    VectorTable_add_inputs(pvt, design);
 
-    create_file(file, design);
+    gchar *design_file  = "c:\\Users\\fpeng\\Desktop\\qcad\\layer.qca";
+    create_file(design_file, design);
+
+    simulation_data *sim_data = run_simulation(BISTABLE, EXHAUSTIVE_VERIFICATION, design, pvt);
+
+    SIMULATION_OUTPUT sim_output = {sim_data, design->bus_layout, FALSE};
+
+    gchar *output_file = "c:\\Users\\fpeng\\Desktop\\qcad\\sim_output";
+    create_simulation_output_file(output_file, &sim_output);
 
     design_destroy(design);
-
-//    QCADLayer *layer = qcad_layer_new(LAYER_TYPE_CELLS, LAYER_STATUS_ACTIVE, "Main Cell Layer");
-//    qcad_design_object_serialize (QCAD_DESIGN_OBJECT(layer), fp);
+    VectorTable_free(pvt);
 
     return 0;
 }
