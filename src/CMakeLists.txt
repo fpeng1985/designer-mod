@@ -188,3 +188,29 @@ target_link_libraries(graph_dialog
 #if(TARGET graph_dialog)
 #    add_definitions(-DSTDIO_FILEIO -DGTK_GUI)
 #endif(TARGET graph_dialog)
+
+add_executable(pfmain
+        ${STDIO_FILEIO_FILES}
+        fileio_helpers.c                      fileio_helpers.h
+        custom_widgets.c                      custom_widgets.h
+
+        simulation.c                          simulation.h
+        simulation_data.c                     simulation_data.h
+        bistable_simulation.c                 bistable_simulation.h
+        coherence_vector.c                    coherence_vector.h
+
+        design.c                              design.h
+
+        ${OBJECT_FILES}
+
+        exp_array.c                           exp_array.h
+        objects/object_helpers.c              objects/object_helpers.h
+        hsl2rgb.c                             hsl2rgb.h
+        generic_utils.c                       generic_utils.h
+
+        graph_dialog_widget_data.c            graph_dialog_widget_data.h
+
+        main_pf.c
+        )
+target_link_libraries(pfmain m glib-2.0 intl gobject-2.0)
+target_compile_options(pfmain PUBLIC -DSTDIO_FILEIO)
