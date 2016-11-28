@@ -46,26 +46,26 @@ int main(int argc, char **argv) {
         char index[8];
 
         gchar **lines = g_strsplit(contents, "\n", -1);
-        int i = 0;
-        for (gchar **line = lines; *line; ++line, ++i) {
+        int r = 0;
+        for (gchar **line = lines; *line; ++line, ++r) {
 
             gchar **line_cells = g_strsplit_set(*line, "\t\n ", -1);
-            int j = 0;
-            for (gchar **line_cell = line_cells; *line_cell; ++line_cell, ++j) {
+            int c = 0;
+            for (gchar **line_cell = line_cells; *line_cell; ++line_cell, ++c) {
                 gint line_cell_val = atoi(*line_cell);
 //                g_print("%d\n", line_cell_val);
 
                 switch(line_cell_val) {
                     case -1:
                         //create cell
-                        cell = QCAD_CELL(qcad_cell_new(100+20*i, 100+20*j));
+                        cell = QCAD_CELL(qcad_cell_new(100+20*c, 100+20*r));
                         //set cell function
                         qcad_cell_set_function(cell, QCAD_CELL_INPUT);
                         //set cell label
                         g_strlcpy(cell_label, "I", 128);
-                        itoa(i, index, 10);
+                        itoa(r, index, 10);
                         g_strlcat(cell_label, index, 128);
-                        itoa(j, index, 10);
+                        itoa(c, index, 10);
                         g_strlcat(cell_label, index, 128);
                         g_print("%s\n", cell_label);
                         qcad_cell_set_label(cell, cell_label);
@@ -74,14 +74,14 @@ int main(int argc, char **argv) {
                         break;
                     case -2:
                         //create cell
-                        cell = QCAD_CELL(qcad_cell_new(100+20*i, 100+20*j));
+                        cell = QCAD_CELL(qcad_cell_new(100+20*c, 100+20*r));
                         //set cell function
                         qcad_cell_set_function(cell, QCAD_CELL_OUTPUT);
                         //set cell label
                         g_strlcpy(cell_label, "O", 128);
-                        itoa(i, index, 10);
+                        itoa(r, index, 10);
                         g_strlcat(cell_label, index, 128);
-                        itoa(j, index, 10);
+                        itoa(c, index, 10);
                         g_strlcat(cell_label, index, 128);
                         g_print("%s\n", cell_label);
                         qcad_cell_set_label(cell, cell_label);
@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
                         break;
                     case 1:
                         //create cell
-                        cell = QCAD_CELL(qcad_cell_new(100+20*i, 100+20*j));
+                        cell = QCAD_CELL(qcad_cell_new(100+20*c, 100+20*r));
                         //add cell
                         qcad_do_container_add(QCAD_DO_CONTAINER(layer), QCAD_DESIGN_OBJECT(cell));
                     case 0:
