@@ -12,7 +12,7 @@ import subprocess
 
 parser = argparse.ArgumentParser(description="Specify the benchmark file")
 parser.add_argument("-i", type=str, nargs='?', dest='benchmark_file_name', help='benchmark file name')
-parser.add_argument("-w", type=str, nargs='?', dest='output_dir', help='output file directory')
+parser.add_argument("-o", type=str, nargs='?', dest='output_dir', help='output file directory')
 
 
 def _combine(a, n, b, m, M, combinations):
