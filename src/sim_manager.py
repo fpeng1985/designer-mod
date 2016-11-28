@@ -8,6 +8,7 @@ import argparse
 import fileinput
 import os
 import copy
+import subprocess
 
 parser = argparse.ArgumentParser(description="Specify the benchmark file")
 parser.add_argument("-i", type=str, nargs='?', dest='benchmark_file_name', help='benchmark file name')
@@ -70,6 +71,7 @@ if __name__ == "__main__":
     outdir = os.path.join(args.output_dir, base_name)
     if not os.path.exists(outdir):
         os.mkdir(outdir)
+    print(outdir)
 
     circuit, normals = load_structure_file(args.benchmark_file_name)
 
@@ -89,4 +91,5 @@ if __name__ == "__main__":
             structure_file_name = os.path.join(resultdir, str(cnt)+".txt")
             write_structure_file(structure, structure_file_name)
             cnt += 1
-        
+            print("processing {0}".format(os.path.abspath(structure_file_name)))
+            subprocess.call("pfmain -i {0} -o {1}".format(os.path.abspath(structure_file_name), os.path.abspath(resultdir)), shell=True)
