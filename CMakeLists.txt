@@ -1,6 +1,10 @@
 cmake_minimum_required (VERSION 3.5.1)
 project (qcadesigner-pf)
 
+if( CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    add_definitions(-DWin32)
+endif()
+
 find_package (PkgConfig REQUIRED)
 pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
 
