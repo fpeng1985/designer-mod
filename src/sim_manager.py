@@ -11,6 +11,7 @@ import copy
 import subprocess
 import itertools
 import threading
+import qm
 from functools import reduce
 from pyparsing import Literal, OneOrMore, Word, alphanums, nums, alphas, Optional, oneOf, CaselessLiteral, Combine, Group
 
@@ -48,6 +49,13 @@ def write_structure_file(structure, structure_file_name):
     with open(structure_file_name, 'w') as f:
         f.writelines(lines)
         
+def generate_qca_and_sim_file_from_structure(structure_file_name):
+    input_file_name = os.path.abspath(structure_file_name)
+    output_dir = os.path.abspath(os.path.dirname(structure_file_name))
+
+    print("generating qca and sim file for circuit structure {0}".format(input_file_name))
+    subprocess.call("pfmain -i {0} -o {1}".format(input_file_name, output_dir), shell=True)
+    
 ###############################################################################
 
 class TraceParser:
@@ -81,12 +89,13 @@ class TraceParser:
                         Literal("[TYPE:BUS_LAYOUT]").suppress() + Literal("[#TYPE:BUS_LAYOUT]").suppress() + \
                         Literal("[#SIMULATION_OUTPUT]").suppress()
     
-    def generate_truth_table_file_from_sim(sim_file_name):
-        print("generating truth table file for {0}".format(sim_file_name))
+    def generate_truth_and_logic_file_from_sim(sim_file_name):
+        print("generating truth table and logic expression file for {0}".format(sim_file_name))
         
         TraceParser.trace_container.clear()
         TraceParser.simulation_output.parseFile(sim_file_name)
        
+        #collect data from simulation output file
         labels = []
         trace_datas = []
         for trace in TraceParser.trace_container:
@@ -100,12 +109,13 @@ class TraceParser:
                 tmp.append(trace_datas[j][i])
             data.append(tuple(tmp))
     
+        #compute output index
         output_index = []
         for i in range(len(labels)):
             if labels[i].startswith("O"):
                 output_index.append(i)
-        # print(output_index)
     
+        #compute truth table
         truth = set()
         for d in data:
             flag = True
@@ -114,40 +124,83 @@ class TraceParser:
                    flag = False
             if flag:
                 tmp = [ int(x) for x in d[:output_index[0]] ]
+                tmp = [1 if x==1 else 0 for x in tmp]
                 for i in output_index:
                     if d[i] > 0.5:
                         tmp.append(1)
                     else:
-                        tmp.append(-1)
+                        tmp.append(0)
                 truth.add(tuple(tmp))
+        truth_table = list(truth)
+        
+        #compute logic expression for each output
+        logic_exprs = []
+        for out_idx in output_index:
+            truth_values = []
+            for t in truth_table:
+                truth_values.append(t[:output_index[0]] + (t[out_idx],))
+            
+            print(labels[:output_index[0]] + [labels[out_idx]])
+            print(truth_values)
+            logic_expr = TraceParser.compute_logic_from_truth_table(labels[:output_index[0]] + [labels[out_idx]], truth_values)
+            logic_exprs.append(logic_expr)
     
+        #write truth table and logic expressions to file
         base_name = os.path.basename(sim_file_name)
         base_name = base_name[:base_name.find(".")]
         output_dir = os.path.dirname(sim_file_name)
-        output_file_name = os.path.join(output_dir, base_name+".truth")
+        output_file_name = os.path.join(output_dir, base_name+".logic")
         with open(output_file_name, 'w') as outf:
             for label in labels:
                 outf.write("{0}\t".format(label))
-            outf.write("\n==========================================\n")
-            for t in truth:
+            outf.write("\n")
+
+            for t in truth_table:
                 for d in t:
                     outf.write("{0}\t".format(d))
                 outf.write("\n")
+            
+            for expr in logic_exprs:
+                outf.write(expr)
+                outf.write("\n")
+        
+    def compute_logic_from_truth_table(labels, truth_values):
+        print(labels)
+        print(truth_values)
+        input_size = len(labels)-1
+        
+        ones = []
+        zeros = []
+        for t in truth_values:
+            tmp_val = 0
+            for i in range(input_size):
+                tmp_val += t[i]*(2**(input_size-1-i))
+            if t[-1] == 1:
+                ones.append(tmp_val)
+            else:#t[-1] == 0
+                zeros.append(tmp_val)
+        print(ones)
+        print(zeros)
+        
+        terms = qm.qm(ones=ones, zeros=zeros)
+        ret = []
+        for term in terms:
+            tmp = []
+            for i in range(input_size):
+                if term[i] == "1":
+                    tmp.append(labels[i])
+                elif term[i] == "0":
+                    tmp.append(labels[i] + "'")
+            ret.append("*".join(tmp))
+        return labels[-1] + " = " + " + ".join(ret)
 
 ###############################################################################
-
-def generate_qca_and_sim_file_from_structure(structure_file_name):
-    input_file_name = os.path.abspath(structure_file_name)
-    output_dir = os.path.abspath(os.path.dirname(structure_file_name))
-
-    print("generating qca and sim file for circuit structure {0}".format(input_file_name))
-    subprocess.call("pfmain -i {0} -o {1}".format(input_file_name, output_dir), shell=True)
-
+    
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    print(args.benchmark_file_name)
-    print(args.output_dir)
+    #print(args.benchmark_file_name)
+    #print(args.output_dir)
     base_name = os.path.basename(args.benchmark_file_name)
     base_name = base_name[:base_name.find(".")]
 
@@ -191,5 +244,5 @@ if __name__ == "__main__":
         sim_files = filter(lambda x: x.endswith(".sim"), circuit_files)
         sim_file_names = [os.path.join(output_dir, sim_file) for sim_file in sim_files]
         for sim_file_name in sim_file_names:
-            TraceParser.generate_truth_table_file_from_sim(os.path.abspath(sim_file_name))
+            TraceParser.generate_truth_and_logic_file_from_sim(os.path.abspath(sim_file_name))
     
