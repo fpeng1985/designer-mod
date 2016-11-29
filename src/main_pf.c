@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
     gchar **design_name_splited = g_strsplit(design_file_name, ".", -1);
     gchar sim_file_name[1024];
     g_strlcpy(sim_file_name, *design_name_splited, 1024);
-    g_strlcat(design_file_name, ".sim", 1024);
+    g_strlcat(sim_file_name, ".sim", 1024);
     create_simulation_output_file(sim_file_name, &sim_output);
 
     //[6]destroy design object, reclaim its memory
