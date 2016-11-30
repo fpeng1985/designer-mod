@@ -22,3 +22,5 @@ add_executable(qcamod
         )
 target_link_libraries(qcamod m glib-2.0 intl gobject-2.0)
 target_compile_options(qcamod PUBLIC -DSTDIO_FILEIO)
+
+add_executable(sim_parser sim_parser.cpp)

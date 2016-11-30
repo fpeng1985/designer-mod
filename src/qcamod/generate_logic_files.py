@@ -40,20 +40,33 @@ simulation_output = Literal("[SIMULATION_OUTPUT]").suppress() + simulation_data 
                     
 #functions
 def compute_logic_expression_from_truth_table(labels, truth_values):
+    print(truth_values)
     input_size = len(labels)-1
     
     ones = []
     zeros = []
-    for t in truth_values:
+    dc = []
+    i = 0
+    while (i < len(truth_values)):
         tmp_val = 0
-        for i in range(input_size):
-            tmp_val += t[i]*(2**(input_size-1-i))
-        if t[-1] == 1:
+        for j in range(input_size):
+            tmp_val += truth_values[i][j]*(2**(input_size-1-j))
+        if i < len(truth_values) -1:
+            if truth_values[i][:-1]==truth_values[i+1][:-1] and truth_values[i][-1] != truth_values[i+1][-1]:
+                dc.append(tmp_val)
+                i += 2
+                continue
+        if truth_values[i][-1] == 1:
             ones.append(tmp_val)
-        else:#t[-1] == 0
+        else:#truth_values[i][-1] == 0
             zeros.append(tmp_val)
+        i += 1
     
-    terms = qm.qm(ones=ones, zeros=zeros)
+    print(ones)
+    print(zeros)
+    print(dc)
+    
+    terms = qm.qm(ones=ones, zeros=zeros, dc=dc)
     ret = []
     for term in terms:
         tmp = []
@@ -91,7 +104,7 @@ def generate_truth_and_logic_file_from_sim(sim_file_name):
     for i in range(len(labels)):
         if labels[i].startswith("O"):
             output_index.append(i)
-
+            
     #compute truth table
     truth = set()
     for d in data:
@@ -109,8 +122,11 @@ def generate_truth_and_logic_file_from_sim(sim_file_name):
                     tmp.append(0)
             truth.add(tuple(tmp))
     truth_table = list(truth)
+    truth_table.sort()
     
-    #compute logic expression for each output
+    #assert(len(truth_table) == output_index[0])
+    
+    #compute logic expression for each output index
     logic_exprs = []
     for out_idx in output_index:
         truth_values = []
@@ -150,3 +166,7 @@ def generate_logic_files(outdir):
         sim_file_names = [os.path.join(output_dir, sim_file) for sim_file in sim_files]
         for sim_file_name in sim_file_names:
             generate_truth_and_logic_file_from_sim(os.path.abspath(sim_file_name))
+
+
+if __name__ == "__main__":
+    generate_truth_and_logic_file_from_sim(r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\3\61.sim")
