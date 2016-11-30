@@ -5,7 +5,6 @@ import fileinput
 import itertools
 import os
 import subprocess
-import threading
 
 
 def load_structure_file(benchmark_file_name):
@@ -32,16 +31,11 @@ def write_structure_file(structure, structure_file_name):
         lines.append("\t".join(line)+"\n")
     with open(structure_file_name, 'w') as f:
         f.writelines(lines)
-        
-def generate_qca_and_sim_file_from_structure(structure_file_name):
-    input_file_name = os.path.abspath(structure_file_name)
-    output_dir = os.path.abspath(os.path.dirname(structure_file_name))
 
-    print("generating qca and sim file for circuit structure {0}".format(input_file_name))
-    subprocess.call("qcamod -i {0} -o {1}".format(input_file_name, output_dir), shell=True)
+        
+def generate_structures_from_benchmark(benchmark_file_name, outdir):
+    assert(os.path.exists(outdir))
     
-    
-def generate_simulation_files(benchmark_file_name, outdir):
     #load benchmark circuit structure
     circuit, normals = load_structure_file(benchmark_file_name)
     
@@ -52,7 +46,7 @@ def generate_simulation_files(benchmark_file_name, outdir):
             os.mkdir(output_dir)
 
         combinations = itertools.combinations(normals, i+1)
-
+        
         cnt = 1
         for comb in combinations:
             #construct structure
@@ -60,8 +54,12 @@ def generate_simulation_files(benchmark_file_name, outdir):
             for r, c in comb:
                 structure[r][c] = 0
             #write structure
-            structure_file_name = os.path.join(output_dir, str(cnt)+".txt")
-            write_structure_file(structure, structure_file_name)
+            structure_file_name = os.path.abspath(os.path.join(output_dir, str(cnt)+".txt"))
+            print("generating structure file {0}".format(structure_file_name))
+            write_structure_file(structure, (structure_file_name))
             cnt += 1
-            #generate qca and sim
-            threading.Thread(target=generate_qca_and_sim_file_from_structure, args=(structure_file_name,)).start()
+            
+            
+def generate_qca_and_sim_from_structure(structure_file_name, output_dir):
+    print("generating qca and sim file from {0}".format(structure_file_name))
+    subprocess.call("qcamod -i {0} -o {1}".format(structure_file_name, output_dir), shell=True)

@@ -23,4 +23,13 @@ add_executable(qcamod
 target_link_libraries(qcamod m glib-2.0 intl gobject-2.0)
 target_compile_options(qcamod PUBLIC -DSTDIO_FILEIO)
 
+find_package(Boost COMPONENTS system filesystem program_options REQUIRED)
+if(Boost_FOUND)
+    include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+    message(STATUS "Boost LIB : ${Boost_LIBRARIES}")
+else(Boost_FOUND)
+    message("Boost not found!")
+endif(Boost_FOUND)
+
 add_executable(sim_parser sim_parser.cpp)
+target_link_libraries(sim_parser ${Boost_LIBRARIES})
