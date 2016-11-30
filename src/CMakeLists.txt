@@ -1,41 +1,6 @@
-set(UNDO_REDO_FILES
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADUndoEntry.c
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADUndoEntry.h
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADUndoEntryGroup.c
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADUndoEntryGroup.h
-        ${PROJECT_SOURCE_DIR}/src/selection_undo.c
-        ${PROJECT_SOURCE_DIR}/src/selection_undo.h
-        )
-
-set(STDIO_FILEIO_FILES
-        ${PROJECT_SOURCE_DIR}/src/fileio.c 
-		${PROJECT_SOURCE_DIR}/src/fileio.h
-        )
-
-set(OBJECT_FILES
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADCell.c
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADCell.h
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADCompoundDO.c
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADCompoundDO.h
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADDesignObject.c
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADDesignObject.h
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADDOContainer.c
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADDOContainer.h
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADLabel.c
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADLabel.h
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADLayer.c
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADLayer.h
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADRuler.c
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADRuler.h
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADStretchyObject.c
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADStretchyObject.h
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADSubstrate.c
-        ${PROJECT_SOURCE_DIR}/src/objects/QCADSubstrate.h
-        )
-
 add_definitions(-DPACKAGE=\"QCADesigner\")
 add_definitions(-DVERSION="2.0.3")
-
+#########################################################################
 add_executable(QCADesigner
         ${UNDO_REDO_FILES}
         ${STDIO_FILEIO_FILES}
@@ -114,8 +79,7 @@ target_link_libraries(QCADesigner
         atk-1.0 cairo gdk_pixbuf-2.0 gio-2.0 gobject-2.0 glib-2.0 intl gthread-2.0
         )
 target_compile_options(QCADesigner PUBLIC -DSTDIO_FILEIO -DUNDO_REDO -DGTK_GUI -DDESIGNER)
-
-
+#########################################################################
 add_executable(batch_sim
         ${STDIO_FILEIO_FILES}
         fileio_helpers.c                      fileio_helpers.h
@@ -141,7 +105,7 @@ add_executable(batch_sim
         )
 target_link_libraries(batch_sim m glib-2.0 intl gobject-2.0)
 target_compile_options(batch_sim PUBLIC -DSTDIO_FILEIO)
-
+#########################################################################
 add_executable(graph_dialog
         ${STDIO_FILEIO_FILES}
         ${OBJECT_FILES}
@@ -182,4 +146,4 @@ target_link_libraries(graph_dialog
         )
 
 #########################################################################
-add_subdirectory(qcamod)
+

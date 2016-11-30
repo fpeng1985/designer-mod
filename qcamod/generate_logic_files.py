@@ -10,6 +10,7 @@ def generate_truth_from_sim(sim_file_name, output_dir):
     print("generating truth file from {0}".format(sim_file_name))
     subprocess.call("sim_parser -i {0} -o {1}".format(sim_file_name, output_dir), shell=True)
 
+    
 def compute_logic_expression_from_truth_table(labels, truth_values):
     input_size = len(labels)-1
     
@@ -85,17 +86,6 @@ def generate_logic_from_truth(truth_file_name, output_dir):
     with open(logic_file_name, 'w') as outf:        
         for expr in logic_exprs:
             outf.write("{0}\n".format(expr))
-    
-
-def generate_logic_files(outdir):
-    dir_names = os.listdir(outdir)
-    for dir_name in dir_names:
-        output_dir = os.path.join(outdir, dir_name)
-        circuit_files = os.listdir(output_dir)
-        sim_files = filter(lambda x: x.endswith(".sim"), circuit_files)
-        sim_file_names = [os.path.join(output_dir, sim_file) for sim_file in sim_files]
-        for sim_file_name in sim_file_names:
-            generate_logic_from_truth(os.path.abspath(sim_file_name), output_dir)
 
 
 if __name__ == "__main__":
