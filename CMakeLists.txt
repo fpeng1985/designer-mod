@@ -71,5 +71,7 @@ set(OBJECT_FILES
         ${PROJECT_SOURCE_DIR}/src/objects/QCADSubstrate.c
         ${PROJECT_SOURCE_DIR}/src/objects/QCADSubstrate.h
         )
+
+#sub dirs
 add_subdirectory(src)
 add_subdirectory(qcamod)
