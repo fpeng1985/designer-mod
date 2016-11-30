@@ -4,9 +4,9 @@
 
 #include <stdio.h>
 #include <glib.h>
-#include "fileio.h"
-#include "global_consts.h"
-#include "objects/QCADDOContainer.h"
+#include "../fileio.h"
+#include "../global_consts.h"
+#include "../objects/QCADDOContainer.h"
 
 static gchar *input_file_name;
 static gchar *output_dir_name;

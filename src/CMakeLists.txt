@@ -1,35 +1,36 @@
 set(UNDO_REDO_FILES
-        objects/QCADUndoEntry.c
-        objects/QCADUndoEntry.h
-        objects/QCADUndoEntryGroup.c
-        objects/QCADUndoEntryGroup.h
-        selection_undo.c
-        selection_undo.h
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADUndoEntry.c
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADUndoEntry.h
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADUndoEntryGroup.c
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADUndoEntryGroup.h
+        ${PROJECT_SOURCE_DIR}/src/selection_undo.c
+        ${PROJECT_SOURCE_DIR}/src/selection_undo.h
         )
 
 set(STDIO_FILEIO_FILES
-        fileio.c fileio.h
+        ${PROJECT_SOURCE_DIR}/src/fileio.c 
+		${PROJECT_SOURCE_DIR}/src/fileio.h
         )
 
 set(OBJECT_FILES
-        objects/QCADCell.c
-        objects/QCADCell.h
-        objects/QCADCompoundDO.c
-        objects/QCADCompoundDO.h
-        objects/QCADDesignObject.c
-        objects/QCADDesignObject.h
-        objects/QCADDOContainer.c
-        objects/QCADDOContainer.h
-        objects/QCADLabel.c
-        objects/QCADLabel.h
-        objects/QCADLayer.c
-        objects/QCADLayer.h
-        objects/QCADRuler.c
-        objects/QCADRuler.h
-        objects/QCADStretchyObject.c
-        objects/QCADStretchyObject.h
-        objects/QCADSubstrate.c
-        objects/QCADSubstrate.h
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADCell.c
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADCell.h
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADCompoundDO.c
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADCompoundDO.h
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADDesignObject.c
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADDesignObject.h
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADDOContainer.c
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADDOContainer.h
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADLabel.c
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADLabel.h
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADLayer.c
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADLayer.h
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADRuler.c
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADRuler.h
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADStretchyObject.c
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADStretchyObject.h
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADSubstrate.c
+        ${PROJECT_SOURCE_DIR}/src/objects/QCADSubstrate.h
         )
 
 add_definitions(-DPACKAGE=\"QCADesigner\")
@@ -181,27 +182,4 @@ target_link_libraries(graph_dialog
         )
 
 #########################################################################
-add_executable(pfmain
-        ${STDIO_FILEIO_FILES}
-        fileio_helpers.c
-        custom_widgets.c
-
-        simulation.c
-        simulation_data.c
-        bistable_simulation.c
-        coherence_vector.c
-        Vector_table.c
-
-        design.c
-
-        ${OBJECT_FILES}
-        objects/object_helpers.c              objects/object_helpers.h
-
-        exp_array.c
-        hsl2rgb.c
-        generic_utils.c
-
-        main_pf.c
-        )
-target_link_libraries(pfmain m glib-2.0 intl gobject-2.0)
-target_compile_options(pfmain PUBLIC -DSTDIO_FILEIO)
+add_subdirectory(qcamod)
