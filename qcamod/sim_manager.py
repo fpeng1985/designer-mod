@@ -15,7 +15,7 @@ default_benchmark_file_name = ""
 default_output_dir = ""
 
 if platform.system() == "Windows":
-    default_benchmark_file_name = r"C:\msys64\common\benchmark\qcasim\majority_gate_1.txt"
+    default_benchmark_file_name = r"C:\msys64\common\benchmark\qcasim\majority_gate_2.txt"
     default_output_dir =r"C:\Users\fpeng\Documents\sim_manager"
     
     path_env = [r"C:\msys64\mingw64\bin", r"C:\msys64\mingw64\lib", r"C:\Users\fpeng\Data\Workspace\HFUT\QCADesigner\build\bin"]

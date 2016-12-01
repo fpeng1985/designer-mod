@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.5.1)
-project (qcadesigner-mod)
+project (designer-mod)
 
 #find packages
 find_package (PkgConfig REQUIRED)
@@ -8,30 +8,28 @@ pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
 find_package(Boost COMPONENTS system filesystem program_options REQUIRED)
 if(Boost_FOUND)
     include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-    message(STATUS "Boost LIB : ${Boost_LIBRARIES}")
+#    message(STATUS "Boost LIB : ${Boost_LIBRARIES}")
 else(Boost_FOUND)
     message("Boost not found!")
 endif(Boost_FOUND)
 
 #set paths
 include_directories(${GTK2_INCLUDE_DIRS})
-#link_directories(${GTK2_LIBRARY_DIRS} C:/msys64/mingw64/x86_64-w64-mingw32/lib)
 link_directories(${GTK2_LIBRARY_DIRS})
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH    ${PROJECT_BINARY_DIR}/lib)
 
 #set compiler flags
-set(CMAKE_C_COMPILER c:/msys64/mingw64/bin/gcc)
 set(CMAKE_C_FLAGS "-mms-bitfields -pthread")
-
-set(CMAKE_CXX_COMPILER c:/msys64/mingw64/bin/g++)
 set(CMAKE_CXX_FLAGS         "$ENV{CXXFLAGS} -Wall -std=c++14")
 set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} -O0 -g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -msse2")
 
 #platform specific settings
 if( CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(CMAKE_C_COMPILER   c:/msys64/mingw64/bin/gcc)
+    set(CMAKE_CXX_COMPILER c:/msys64/mingw64/bin/g++)
     add_definitions(-DWin32)
     link_directories(C:/msys64/mingw64/bin C:/msys64/mingw64/lib)
 endif()
