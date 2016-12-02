@@ -1,36 +1,27 @@
 //
-// Created by fpeng on 2016/11/18.
+// Created by fpeng on 2016/12/2.
 //
+#include "generate_qca_and_sim_from_structure.h"
 
 #include <stdio.h>
 #include <glib.h>
+
+#ifndef STDIO_FILEIO
+#define STDIO_FILEIO
+#endif
+
 #include "../src/fileio.h"
 #include "../src/global_consts.h"
 #include "../src/objects/QCADDOContainer.h"
 
-static gchar *input_file_name;
-static gchar *output_dir_name;
-static GOptionEntry entries[] = {
-        {"input-file", 'i', 0, G_OPTION_ARG_STRING, &input_file_name, "input file name", NULL},
-        {"output-dir", 'o', 0, G_OPTION_ARG_STRING, &output_dir_name, "output directory name", NULL},
-        {NULL}
-};
-
-
-int main(int argc, char **argv) {
-
-    //[1]parse cmd line options
-    GError *error = NULL;
-    GOptionContext *context = NULL;
-    context = g_option_context_new("-input output");
-    g_option_context_add_main_entries (context, entries, NULL);
-    if (!g_option_context_parse (context, &argc, &argv, &error)) {
-        g_print ("option parsing failed: %s/n", error->message);
-        exit (1);
-    }
+void generate_qca_and_sim_from_structure(char *input_file_name, char *output_dir_name) {
 
     g_assert( g_file_test(input_file_name, G_FILE_TEST_EXISTS) );
     g_assert( g_file_test(output_dir_name, G_FILE_TEST_EXISTS) );
+
+    GError *error = NULL;
+
+    g_print("generating qca and sim file from %s\n", input_file_name);
 
     //[2]create design and get "Main Cell Layer"
     QCADSubstrate *sub = NULL;
@@ -143,8 +134,7 @@ int main(int argc, char **argv) {
     create_simulation_output_file(sim_file_name_str->str, &sim_output);
     g_string_free(sim_file_name_str, TRUE);
 
+
     //[8]destroy design object, reclaim its memory
     design_destroy(design);
-
-    return 0;
 }

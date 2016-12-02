@@ -2,11 +2,10 @@ cmake_minimum_required (VERSION 3.5.1)
 project (designer-mod)
 
 #gtk2
-find_package (PkgConfig REQUIRED)
-pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK2 REQUIRED gtk+-2.0)
 include_directories(${GTK2_INCLUDE_DIRS})
 link_directories(${GTK2_LIBRARY_DIRS})
-message(STATUS ${GTK2_LIBRARIES})
 
 #boost
 find_package(Boost COMPONENTS system filesystem program_options REQUIRED)
@@ -17,20 +16,18 @@ else(Boost_FOUND)
 endif(Boost_FOUND)
 
 #swig
-FIND_PACKAGE(SWIG REQUIRED)
-INCLUDE(${SWIG_USE_FILE})
+find_package(SWIG REQUIRED)
+include(${SWIG_USE_FILE})
 
 #python
-FIND_PACKAGE(PythonLibs 3 REQUIRED)
-INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-
-set(PYTHON_PATH ${PROJECT_BINARY_DIR}/bin)
-message(STATUS ${PYTHON_PATH})
+find_package(PythonLibs 3 REQUIRED)
+include_directories(${PYTHON_INCLUDE_PATH})
 
 #set paths
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH    ${PROJECT_BINARY_DIR}/bin)
-set(CMAKE_SWIG_OUTDIR ${PROJECT_BINARY_DIR}/bin)
+link_directories(${LIBRARY_OUTPUT_PATH})
+set(CMAKE_SWIG_OUTDIR      ${PROJECT_BINARY_DIR}/bin)
 
 #set compiler flags
 set(CMAKE_C_FLAGS "-mms-bitfields -pthread")

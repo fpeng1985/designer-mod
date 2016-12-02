@@ -1,4 +1,5 @@
-add_executable(qcamod
+#compile QCADesigner code as a library named libqcamod
+set(QCAMOD_SRC
         ${STDIO_FILEIO_FILES}
         ../src/fileio_helpers.c
         ../src/custom_widgets.c
@@ -12,29 +13,37 @@ add_executable(qcamod
         ../src/design.c
 
         ${OBJECT_FILES}
-        ../src/objects/object_helpers.c              ../src/objects/object_helpers.h
+        ../src/objects/object_helpers.c
 
         ../src/exp_array.c
         ../src/hsl2rgb.c
         ../src/generic_utils.c
-
-        qcamod.c
         )
-target_link_libraries(qcamod m glib-2.0 intl gobject-2.0)
+add_library(qcamod SHARED ${QCAMOD_SRC})
+target_link_libraries(qcamod ${GTK2_LIBRARIES})
 target_compile_options(qcamod PUBLIC -DSTDIO_FILEIO)
+
+#swig files
+SET_SOURCE_FILES_PROPERTIES(generate_qca_and_sim_from_structure.i PROPERTIES SWIG_FLAGS "-includeall")
+SWIG_ADD_MODULE(generate_qca_and_sim_from_structure python generate_qca_and_sim_from_structure.i generate_qca_and_sim_from_structure.c)
+
+SWIG_LINK_LIBRARIES(generate_qca_and_sim_from_structure ${PYTHON_LIBRARIES} ${GTK2_LIBRARIES} qcamod)
 
 SET_SOURCE_FILES_PROPERTIES(generate_truth_from_sim.i PROPERTIES CPLUSPLUS ON)
 SET_SOURCE_FILES_PROPERTIES(generate_truth_from_sim.i PROPERTIES SWIG_FLAGS "-includeall")
 SWIG_ADD_MODULE(generate_truth_from_sim python generate_truth_from_sim.i generate_truth_from_sim.cpp)
 SWIG_LINK_LIBRARIES(generate_truth_from_sim ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
 
-add_executable(sim_parser sim_parser_main.cpp generate_truth_from_sim.cpp)
-target_link_libraries(sim_parser ${Boost_LIBRARIES})
+#independent tools
+#add_executable(gen_qca_and_sim gen_qca_and_sim_tool.c generate_qca_and_sim_from_structure.c)
+#target_link_libraries(gen_qca_and_sim ${GTK2_LIBRARIES} qcamod)
+#
+#add_executable(gen_truth gen_truth_tool.cpp generate_truth_from_sim.cpp)
+#target_link_libraries(gen_truth ${Boost_LIBRARIES})
 
+#python scripts
 set(PY_SCRIPTS
         ${CMAKE_CURRENT_SOURCE_DIR}/main.py
-        ${CMAKE_CURRENT_SOURCE_DIR}/generate_simulation_files.py
-        ${CMAKE_CURRENT_SOURCE_DIR}/generate_logic_files.py
         )
 add_custom_command(OUTPUT _copy_python_scripts COMMAND ${CMAKE_COMMAND} -E copy ${PY_SCRIPTS} ${EXECUTABLE_OUTPUT_PATH})
 add_custom_target(copy_python_scripts ALL DEPENDS _copy_python_scripts)
