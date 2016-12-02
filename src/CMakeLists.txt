@@ -1,6 +1,7 @@
 add_definitions(-DPACKAGE=\"QCADesigner\")
 add_definitions(-DVERSION="2.0.3")
 #########################################################################
+
 set(QCADesigner_SRC
         ${UNDO_REDO_FILES}
         ${STDIO_FILEIO_FILES}
@@ -74,14 +75,12 @@ set(QCADesigner_SRC
         simulation_data.c                       simulation_data.h
         main.c
         )
-add_executable(QCADesigner ${QCADesigner_SRC})
-#target_link_libraries(QCADesigner
-#        gtk-win32-2.0 gdk-win32-2.0 gdi32 imm32 shell32 ole32 uuid pangowin32-1.0 pangocairo-1.0 pango-1.0
-#        atk-1.0 cairo gdk_pixbuf-2.0 gio-2.0 gobject-2.0 glib-2.0 intl gthread-2.0
-#        )
-target_link_libraries(QCADesigner ${GTK2_LIBRARIES})
-target_compile_options(QCADesigner PUBLIC -DSTDIO_FILEIO -DUNDO_REDO -DGTK_GUI -DDESIGNER)
+#add_executable(QCADesigner ${QCADesigner_SRC})
+#target_link_libraries(QCADesigner ${GTK2_LIBRARIES})
+#target_compile_options(QCADesigner PUBLIC -DSTDIO_FILEIO -DUNDO_REDO -DGTK_GUI -DDESIGNER)
+
 #########################################################################
+
 set(batch_sim_SRC
         ${STDIO_FILEIO_FILES}
         fileio_helpers.c                      fileio_helpers.h
@@ -105,11 +104,13 @@ set(batch_sim_SRC
 
         main_batch_sim.c
         )
-add_executable(batch_sim ${batch_sim_SRC})
-target_link_libraries(batch_sim ${GTK2_LIBRARIES})
-#target_link_libraries(batch_sim glib-2.0 intl gobject-2.0)
-target_compile_options(batch_sim PUBLIC -DSTDIO_FILEIO)
+
+#add_executable(batch_sim ${batch_sim_SRC})
+#target_link_libraries(batch_sim ${GTK2_LIBRARIES})
+#target_compile_options(batch_sim PUBLIC -DSTDIO_FILEIO)
+
 #########################################################################
+
 set(graph_dialog_SRC
         ${STDIO_FILEIO_FILES}
         ${OBJECT_FILES}
@@ -143,13 +144,10 @@ set(graph_dialog_SRC
         hsl2rgb.c                             hsl2rgb.h
         main_graph_dialog.c
         )
-add_executable(graph_dialog ${graph_dialog_SRC})
-target_compile_options(graph_dialog PUBLIC -DSTDIO_FILEIO -DGTK_GUI)
-target_link_libraries(graph_dialog ${GTK2_LIBRARIES})
-#target_link_libraries(graph_dialog
-#        m gtk-win32-2.0 gdk-win32-2.0 gdi32 imm32 shell32 ole32 uuid pangowin32-1.0 pangocairo-1.0
-#        pango-1.0 atk-1.0 cairo gdk_pixbuf-2.0 gio-2.0 gobject-2.0 glib-2.0 intl gthread-2.0
-#        )
+
+#add_executable(graph_dialog ${graph_dialog_SRC})
+#target_compile_options(graph_dialog PUBLIC -DSTDIO_FILEIO -DGTK_GUI)
+#target_link_libraries(graph_dialog ${GTK2_LIBRARIES})
 
 #########################################################################
 
