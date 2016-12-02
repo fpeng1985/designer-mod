@@ -6,10 +6,10 @@
 #define QCADESIGNER_MOD_SIM_PARSER_H
 
 #include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/karma.hpp>
+//#include <boost/spirit/include/karma.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
 namespace qi    = boost::spirit::qi;
-namespace karma = boost::spirit::karma;
+//namespace karma = boost::spirit::karma;
 namespace asc = boost::spirit::ascii;
 
 struct Trace {

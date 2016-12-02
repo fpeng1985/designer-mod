@@ -5,6 +5,7 @@
 #include <string>
 
 #include <vector>
+#include <set>
 #include <iterator>
 #include <algorithm>
 
@@ -59,15 +60,18 @@ void generate_truth_from_sim(const std::string &sim_file_name, const std::string
     //feed parsed data truth value set removing redandunt values
     size_t sample_size = traces[0].trace_data.size();
 
-    int output_index = -1;
+    size_t output_index = 0;
+    bool not_encountered_out_label = true;
     vector<string> labels;
     for (size_t i=0; i<traces.size(); ++i) {
         assert(traces[i].trace_data.size() == sample_size);
 
         labels.push_back(traces[i].data_labels);
 
-        if (traces[i].data_labels.find("O") != string::npos && output_index==-1) {
+        if (traces[i].data_labels.find("O") != string::npos && not_encountered_out_label) {
             output_index = i;
+
+            not_encountered_out_label = false;
         }
     }
 

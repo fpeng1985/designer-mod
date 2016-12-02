@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <glib.h>
 
-#ifndef STDIO_FILEIO
-#define STDIO_FILEIO
-#endif
+//#ifndef STDIO_FILEIO
+//#define STDIO_FILEIO
+//#endif
 
 #include "../src/fileio.h"
 #include "../src/global_consts.h"
