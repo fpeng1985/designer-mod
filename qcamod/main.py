@@ -61,7 +61,7 @@ def generate_structures_from_benchmark(benchmark_file_name, outdir):
             #write structure
             structure_file_name = os.path.abspath(os.path.join(output_dir, str(cnt)+".txt"))
             print("generating structure file {0}".format(structure_file_name))
-            write_structure_file(structure, (structure_file_name))
+            write_structure_file(structure, structure_file_name)
             cnt += 1
 
 
@@ -70,8 +70,6 @@ from generate_qca_and_sim_from_structure import generate_qca_and_sim_from_struct
 ###############################################################################
 #############################logic related functions###########################
 ###############################################################################
-
-
 from generate_truth_from_sim import generate_truth_from_sim
 
 def compute_logic_expression_from_truth_table(labels, truth_values):
