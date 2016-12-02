@@ -9,9 +9,14 @@ import qm
 import argparse
 import platform
 
+from generate_qca_and_sim_from_structure import generate_qca_and_sim_from_structure
+from generate_truth_from_sim import generate_truth_from_sim
+
 ###############################################################################
 ###################simulation related functions################################
 ###############################################################################
+
+
 def load_structure_file(benchmark_file_name):
     circuit = []
     for line in fileinput.input(benchmark_file_name):
@@ -65,12 +70,11 @@ def generate_structures_from_benchmark(benchmark_file_name, outdir):
             cnt += 1
 
 
-from generate_qca_and_sim_from_structure import generate_qca_and_sim_from_structure
 
 ###############################################################################
 #############################logic related functions###########################
 ###############################################################################
-from generate_truth_from_sim import generate_truth_from_sim
+
 
 def compute_logic_expression_from_truth_table(labels, truth_values):
     input_size = len(labels)-1
@@ -79,7 +83,7 @@ def compute_logic_expression_from_truth_table(labels, truth_values):
     zeros = []
     dc = []
     i = 0
-    while (i < len(truth_values)):
+    while i < len(truth_values):
         tmp_val = 0
         for j in range(input_size):
             tmp_val += truth_values[i][j]*(2**(input_size-1-j))
@@ -162,9 +166,6 @@ if platform.system() == "Windows":
     default_benchmark_file_name = r"C:\msys64\common\benchmark\qcasim\majority_gate_2.txt"
     default_output_dir =r"C:\Users\fpeng\Documents\sim_manager"
     
-    # path_env = [r"C:\msys64\mingw64\bin", r"C:\msys64\mingw64\lib", r"C:\Users\fpeng\Data\Workspace\HFUT\designer-mod\cmake-build-debug\bin"]
-    # for p in path_env :
-    #     os.environ["PATH"] += (p+";")
 
 ###############################################################################
 
