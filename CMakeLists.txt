@@ -1,22 +1,21 @@
 cmake_minimum_required (VERSION 3.5.1)
 project (designer-mod)
 
-#find packages
+#gtk2
 find_package (PkgConfig REQUIRED)
 pkg_check_modules (GTK2 REQUIRED gtk+-2.0)
+include_directories(${GTK2_INCLUDE_DIRS})
+link_directories(${GTK2_LIBRARY_DIRS})
 
+#boost
 find_package(Boost COMPONENTS system filesystem program_options REQUIRED)
 if(Boost_FOUND)
     include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-#    message(STATUS "Boost LIB : ${Boost_LIBRARIES}")
 else(Boost_FOUND)
     message("Boost not found!")
 endif(Boost_FOUND)
 
 #set paths
-include_directories(${GTK2_INCLUDE_DIRS})
-link_directories(${GTK2_LIBRARY_DIRS})
-
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH    ${PROJECT_BINARY_DIR}/lib)
 
@@ -30,7 +29,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -msse2")
 if( CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(CMAKE_C_COMPILER   c:/msys64/mingw64/bin/gcc)
     set(CMAKE_CXX_COMPILER c:/msys64/mingw64/bin/g++)
-    add_definitions(-DWin32)
+#    add_definitions(-DWin32)
     link_directories(C:/msys64/mingw64/bin C:/msys64/mingw64/lib)
 endif()
 

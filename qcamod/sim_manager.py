@@ -18,7 +18,7 @@ if platform.system() == "Windows":
     default_benchmark_file_name = r"C:\msys64\common\benchmark\qcasim\majority_gate_2.txt"
     default_output_dir =r"C:\Users\fpeng\Documents\sim_manager"
     
-    path_env = [r"C:\msys64\mingw64\bin", r"C:\msys64\mingw64\lib", r"C:\Users\fpeng\Data\Workspace\HFUT\QCADesigner\build\bin"]
+    path_env = [r"C:\msys64\mingw64\bin", r"C:\msys64\mingw64\lib", r"C:\Users\fpeng\Data\Workspace\HFUT\designer-mod\cmake-build-debug\bin"]
     for p in path_env :
         os.environ["PATH"] += (p+";")
 

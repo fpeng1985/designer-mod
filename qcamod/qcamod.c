@@ -29,6 +29,9 @@ int main(int argc, char **argv) {
         exit (1);
     }
 
+    g_assert( g_file_test(input_file_name, G_FILE_TEST_EXISTS) );
+    g_assert( g_file_test(output_dir_name, G_FILE_TEST_EXISTS) );
+
     //[2]create design and get "Main Cell Layer"
     QCADSubstrate *sub = NULL;
     DESIGN *design = NULL;
@@ -40,7 +43,7 @@ int main(int argc, char **argv) {
     //[3]read file and add cells
     gchar *contents;
     gsize len;
-    if (g_file_get_contents(input_file_name, &contents, &len, error)) {
+    if (g_file_get_contents(input_file_name, &contents, &len, &error)) {
 
         gchar cell_label[128];
         char index[8];
@@ -53,7 +56,6 @@ int main(int argc, char **argv) {
             int c = 0;
             for (gchar **line_cell = line_cells; *line_cell; ++line_cell, ++c) {
                 gint line_cell_val = atoi(*line_cell);
-//                g_print("%d\n", line_cell_val);
 
                 switch(line_cell_val) {
                     case -1:
@@ -67,7 +69,6 @@ int main(int argc, char **argv) {
                         g_strlcat(cell_label, index, 128);
                         itoa(c, index, 10);
                         g_strlcat(cell_label, index, 128);
-                        g_print("%s\n", cell_label);
                         qcad_cell_set_label(cell, cell_label);
                         //add cell
                         qcad_do_container_add(QCAD_DO_CONTAINER(layer), QCAD_DESIGN_OBJECT(cell));
@@ -83,7 +84,6 @@ int main(int argc, char **argv) {
                         g_strlcat(cell_label, index, 128);
                         itoa(c, index, 10);
                         g_strlcat(cell_label, index, 128);
-                        g_print("%s\n", cell_label);
                         qcad_cell_set_label(cell, cell_label);
                         //add cell
                         qcad_do_container_add(QCAD_DO_CONTAINER(layer), QCAD_DESIGN_OBJECT(cell));
@@ -93,14 +93,13 @@ int main(int argc, char **argv) {
                         cell = QCAD_CELL(qcad_cell_new(100+20*c, 100+20*r));
                         //add cell
                         qcad_do_container_add(QCAD_DO_CONTAINER(layer), QCAD_DESIGN_OBJECT(cell));
-                    case 0:
+                    default:
                         break;
                 }
 
             }
             g_strfreev(line_cells);
 
-//            g_print("\n");
         }
         g_strfreev(lines);
 
@@ -108,8 +107,6 @@ int main(int argc, char **argv) {
         g_print("read file error : %s/n", error->message);
     }
     g_free(contents);
-
-//    g_print("=========================================");
 
     //[4]define vector table variable
     VectorTable *pvt = NULL;
@@ -119,42 +116,34 @@ int main(int argc, char **argv) {
     simulation_data *sim_data = run_simulation(BISTABLE, EXHAUSTIVE_VERIFICATION, design, pvt);
     SIMULATION_OUTPUT sim_output = {sim_data, design->bus_layout, FALSE};
 
-    //[6] generate design file
-    gchar **path_names = g_strsplit_set(input_file_name, "\\/.", -1);
-    gchar **base_name_p = NULL;
-    for (base_name_p=path_names; *base_name_p; ++base_name_p) {
-        if ((*(++base_name_p)) == NULL) {
-            --base_name_p;
-            --base_name_p;
-            break;
-        }
-    }
-    gchar *base_name = *base_name_p;
+    //[6] compute design file name and sim file name from input_file_name and output_dir_name
+    gchar *base_name_with_appendix = g_path_get_basename(input_file_name);
+    GString *base_name_str = g_string_new(base_name_with_appendix);
+    base_name_str = g_string_truncate(base_name_str, g_strstr_len(base_name_with_appendix, -1, ".") - base_name_with_appendix);
+    g_free(base_name_with_appendix);
+    gchar *base_name = g_string_free(base_name_str, FALSE);
 
-//    g_print("%s\n", base_name);
+    GString *design_file_name_str = g_string_new(output_dir_name);
+    g_string_append(design_file_name_str, G_DIR_SEPARATOR_S);
+    g_string_append(design_file_name_str, base_name);
+    g_free(base_name);
 
-    gchar design_file_name[1024];
-    g_strlcpy(design_file_name, output_dir_name, 1024);
-#ifdef Win32
-    g_strlcat(design_file_name, "\\", 1024);
-#else
-    g_strlcat(design_file_name, "/", 1024);
-#endif
-    g_strlcat(design_file_name, base_name, 1024);
-    g_strlcat(design_file_name, ".qca", 1024);
+    GString *sim_file_name_str = g_string_new(design_file_name_str->str);
 
-//    g_print("%s\n", design_file_name);
+    g_string_append(design_file_name_str, ".qca");
+    g_string_append(sim_file_name_str, ".sim");
 
-    create_file(design_file_name, design);
+//    g_print("%s\n", design_file_name_str->str);
+//    g_print("%s\n", sim_file_name_str->str);
 
-    //[7]generate simulation output file
-    gchar **design_name_splited = g_strsplit(design_file_name, ".", -1);
-    gchar sim_file_name[1024];
-    g_strlcpy(sim_file_name, *design_name_splited, 1024);
-    g_strlcat(sim_file_name, ".sim", 1024);
-    create_simulation_output_file(sim_file_name, &sim_output);
+    //[7]generate design file and sim file
+    create_file(design_file_name_str->str, design);
+    g_string_free(design_file_name_str, TRUE);
 
-    //[6]destroy design object, reclaim its memory
+    create_simulation_output_file(sim_file_name_str->str, &sim_output);
+    g_string_free(sim_file_name_str, TRUE);
+
+    //[8]destroy design object, reclaim its memory
     design_destroy(design);
 
     return 0;
