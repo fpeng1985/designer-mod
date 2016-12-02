@@ -5,10 +5,13 @@ import os
 import qm
 import subprocess
 
+import generate_truth_from_sim
 
-def generate_truth_from_sim(sim_file_name, output_dir):
-    print("generating truth file from {0}".format(sim_file_name))
-    subprocess.call("sim_parser -i {0} -o {1}".format(sim_file_name, output_dir), shell=True)
+
+generate_truth_from_sim = generate_truth_from_sim.generate_truth_from_sim
+# def generate_truth_from_sim(sim_file_name, output_dir):
+#     print("generating truth file from {0}".format(sim_file_name))
+#     subprocess.call("sim_parser -i {0} -o {1}".format(sim_file_name, output_dir), shell=True)
 
     
 def compute_logic_expression_from_truth_table(labels, truth_values):
@@ -89,4 +92,5 @@ def generate_logic_from_truth(truth_file_name, output_dir):
 
 
 if __name__ == "__main__":
-    generate_logic_from_truth(r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1\1.truth", r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1")
+    generate_truth_from_sim(r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1\1.sim", r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1")
+    # generate_logic_from_truth(r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1\1.truth", r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1")

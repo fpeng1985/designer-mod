@@ -78,9 +78,9 @@ DrawTraceSymbolTable SimParser<Iterator>::draw_trace_symbol;
 
 
 template<typename Iterator>
-int parse_sim_file_by_spirit(Iterator first, Iterator last, std::vector<Trace> &traces) {
+bool parse_sim_file_by_spirit(Iterator first, Iterator last, std::vector<Trace> &traces) {
     SimParser<Iterator> parser;
-    qi::phrase_parse(first, last, parser, asc::space, traces);
+    return qi::phrase_parse(first, last, parser, asc::space, traces);
 }
 
 #endif //QCADESIGNER_MOD_SIM_PARSER_H

@@ -1,7 +1,10 @@
+//
+// Created by fpeng on 2016/12/2.
+//
+
 #include <string>
 
 #include <vector>
-#include <map>
 #include <iterator>
 #include <algorithm>
 
@@ -10,16 +13,15 @@
 #include <sstream>
 
 #include <cassert>
-
-#include "sim_parser.hpp"
+using namespace std;
 
 #include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
-
-using namespace std;
 namespace fs = boost::filesystem;
 
-void generate_truth_file_from_sim(const std::string &sim_file_name, const std::string &output_dir) {
+#include "grammar.hpp"
+
+
+void generate_truth_from_sim(const std::string &sim_file_name, const std::string &output_dir) {
     //read file into string
     ifstream ifs(sim_file_name, std::ios::in);
     istream_iterator<string> ifs_it(ifs), ifs_end();
@@ -57,7 +59,7 @@ void generate_truth_file_from_sim(const std::string &sim_file_name, const std::s
     //feed parsed data truth value set removing redandunt values
     size_t sample_size = traces[0].trace_data.size();
 
-    size_t output_index = -1;
+    int output_index = -1;
     vector<string> labels;
     for (size_t i=0; i<traces.size(); ++i) {
         assert(traces[i].trace_data.size() == sample_size);
@@ -127,38 +129,3 @@ void generate_truth_file_from_sim(const std::string &sim_file_name, const std::s
 
     ofs.close();
 }
-
-
-
-int main(int argc, char *argv[]) {
-//    generate_truth_file_from_sim("C:\\Users\\fpeng\\Documents\\sim_manager\\majority_gate_1\\1\\1.sim",
-//                                 "C:\\Users\\fpeng\\Documents\\sim_manager\\majority_gate_1\\1");
-    namespace po = boost::program_options;
-    po::options_description desc("Allowed options");
-    desc.add_options()
-            ("help", "produce help message")
-            ("sim-file,i", po::value<string>(), "simulation output file")
-            ("out-dir,o", po::value<string>(), "output directory");
-
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
-
-    if (vm.count("help")) {
-        cout << desc << endl;
-
-        return 1;
-    }
-
-    if (!vm.count("sim-file") || !vm.count("out-dir")) {
-        cout << "Missing options" << endl;
-        cout << desc << endl;
-
-        return 1;
-    }
-
-    generate_truth_file_from_sim(vm["sim-file"].as<string>(), vm["out-dir"].as<string>());
-
-    return 0;
-}
-
