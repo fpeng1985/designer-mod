@@ -70,7 +70,6 @@ def generate_structures_from_benchmark(benchmark_file_name, outdir):
             cnt += 1
 
 
-
 ###############################################################################
 #############################logic related functions###########################
 ###############################################################################
@@ -156,19 +155,6 @@ def generate_logic_from_truth(truth_file_name, output_dir):
 ###############################################################################
 
 
-###############################################################################
-#program settings
-
-default_benchmark_file_name = ""
-default_output_dir = ""
-
-if platform.system() == "Windows":
-    default_benchmark_file_name = r"C:\msys64\common\benchmark\qcasim\majority_gate_2.txt"
-    default_output_dir =r"C:\Users\fpeng\Documents\sim_manager"
-    
-
-###############################################################################
-
 def visit_outdir(outdir, func, appendix):
     dir_names = os.listdir(outdir)
     for dir_name in dir_names:
@@ -181,14 +167,26 @@ def visit_outdir(outdir, func, appendix):
             func(os.path.abspath(needed_file_name), os.path.abspath(output_dir))
 
 
+###############################################################################
+#program options
+default_benchmark_file_name = ""
+default_output_dir = ""
+
+if platform.system() == "Windows":
+    default_benchmark_file_name = r"C:\msys64\common\benchmark\qcasim\majority_gate_2.txt"
+    default_output_dir =r"C:\Users\fpeng\Documents\sim_manager"
+    
+parser = argparse.ArgumentParser(description="Specify the benchmark file and output directory")
+parser.add_argument("-i", type=str, nargs='?', dest='benchmark_file_name', default=default_benchmark_file_name, help='benchmark file name')
+parser.add_argument("-o", type=str, nargs='?', dest='outdir', default=default_output_dir, help='output file directory')
+
+###############################################################################
+
 if __name__ == "__main__":
     # generate_qca_and_sim_from_structure(r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1\1.txt", r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1")
     # generate_truth_from_sim(r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1\1.sim", r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1")
     # generate_logic_from_truth(r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1\1.truth", r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1")
 
-    parser = argparse.ArgumentParser(description="Specify the benchmark file")
-    parser.add_argument("-i", type=str, nargs='?', dest='benchmark_file_name', default=default_benchmark_file_name, help='benchmark file name')
-    parser.add_argument("-o", type=str, nargs='?', dest='outdir', default=default_output_dir, help='output file directory')
     args = parser.parse_args()
     
     #make output files dir
