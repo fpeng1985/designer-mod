@@ -9,6 +9,7 @@ import qm
 import argparse
 import platform
 import shutil
+import threading
 
 import generate_qca_and_sim_from_structure
 import generate_truth_from_sim
@@ -66,7 +67,7 @@ def generate_structures_from_benchmark(benchmark_file_name, outdir):
                 structure[r][c] = 0
             #write structure
             structure_file_name = os.path.abspath(os.path.join(output_dir, str(cnt)+".txt"))
-            print("generating structure file {0}".format(structure_file_name))
+            #print("generating structure file {0}".format(structure_file_name))
             write_structure_file(structure, structure_file_name)
             cnt += 1
 
@@ -161,7 +162,7 @@ def generate_logic_from_truth(truth_file_name, output_dir):
     base_name = os.path.basename(truth_file_name)
     base_name = base_name[:base_name.find(".")]
 
-    print("generating logic file from {0}".format(truth_file_name))
+    #print("generating logic file from {0}".format(truth_file_name))
     logic_file_name = os.path.abspath(os.path.join(output_dir, base_name+".logic"))
     with open(logic_file_name, 'w') as outf:
         for expr in logic_exprs:
@@ -172,6 +173,8 @@ def generate_logic_from_truth(truth_file_name, output_dir):
 
 
 def visit_outdir(outdir, func, appendix):
+    threads = []
+
     dir_names = os.listdir(outdir)
     for dir_name in dir_names:
         output_dir = os.path.normpath(os.path.join(outdir, dir_name))
@@ -180,7 +183,15 @@ def visit_outdir(outdir, func, appendix):
         needed_files = filter(lambda x: x.endswith(appendix), all_files)
         needed_file_names = [os.path.join(output_dir, needed_file) for needed_file in needed_files]
         for needed_file_name in needed_file_names:
-            func(os.path.normpath(os.path.abspath(needed_file_name)), os.path.normpath(os.path.abspath(output_dir)))
+            threads.append(threading.Thread(target=func,
+                                            args=(os.path.normpath(os.path.abspath(needed_file_name)),
+                                                  os.path.normpath(os.path.abspath(output_dir)))))
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
 
 
 def generate_statistics(benchmark_file_name, outdir):
@@ -246,8 +257,11 @@ def generate_statistics(benchmark_file_name, outdir):
         for dir_idx in statistics.keys():
             output_dir = os.path.join(outdir, str(dir_idx))
 
-            statistics_file.write("Missing Number : {0}\n".format(dir_idx))
+            statistics_file.write("Missing Pattern : {0}\n".format(dir_idx))
+            statistics_file.write("Total Number : {0}\n".format(statistics[dir_idx]["total"]))
+            statistics_file.write("Error Number : {0}\n".format(statistics[dir_idx]["wrong"]))
             statistics_file.write("Error Rate : {0}\n".format(statistics[dir_idx]["error_rate"]))
+            statistics_file.write("\n")
 
             for logic_expr in statistics[dir_idx]["logic_exprs"].keys():
                 statistics_file.write("Logic exprssion {0} occured {1} times.\n".
@@ -255,6 +269,7 @@ def generate_statistics(benchmark_file_name, outdir):
                 statistics_file.write("The qca file names for them are as follows :\n")
                 for idx in statistics[dir_idx]["logic_exprs"][logic_expr]:
                     statistics_file.write("{0}\n".format(os.path.join(output_dir, str(idx)+".qca")))
+                statistics_file.write("\n")
 
             statistics_file.write("\n========================================================================\n")
 
@@ -290,10 +305,19 @@ if __name__ == "__main__":
     os.mkdir(outdir)
 
     generate_structures_from_benchmark(args.benchmark_file_name, outdir)
-    print(outdir)
-    
-    visit_outdir(outdir, generate_qca_and_sim_from_structure, ".txt")
-    visit_outdir(outdir, generate_truth_from_sim, ".sim")
-    visit_outdir(outdir, generate_logic_from_truth, ".truth")
 
+    print("generating qca and sim start")
+    visit_outdir(outdir, generate_qca_and_sim_from_structure, ".txt")
+    print("generating qca and sim finished")
+
+    print("generating truth start")
+    visit_outdir(outdir, generate_truth_from_sim, ".sim")
+    print("generating truth finished")
+
+    print("generating logic start")
+    visit_outdir(outdir, generate_logic_from_truth, ".truth")
+    print("generating logic finished")
+
+    print("generating statistics start")
     generate_statistics(args.benchmark_file_name, outdir)
+    print("generating statistics finished")

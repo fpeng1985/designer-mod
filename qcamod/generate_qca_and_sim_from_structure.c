@@ -101,7 +101,7 @@ void generate_qca_and_sim_from_structure(char *input_file_name, char *output_dir
     VectorTable_add_inputs(pvt, design);
 
     //[5]run simulation, and construct the corresponding simulation output data structure
-    g_print("generating qca and sim file from %s\n", input_file_name);
+    //g_print("generating qca and sim file from %s\n", input_file_name);
 
     simulation_data *sim_data = run_simulation(BISTABLE, EXHAUSTIVE_VERIFICATION, design, pvt);
     SIMULATION_OUTPUT sim_output = {sim_data, design->bus_layout, FALSE};
