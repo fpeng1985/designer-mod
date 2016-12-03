@@ -8,9 +8,10 @@ import csv
 import qm
 import argparse
 import platform
+import shutil
 
-from generate_qca_and_sim_from_structure import generate_qca_and_sim_from_structure
-from generate_truth_from_sim import generate_truth_from_sim
+import generate_qca_and_sim_from_structure
+import generate_truth_from_sim
 
 ###############################################################################
 ###################simulation related functions################################
@@ -70,13 +71,22 @@ def generate_structures_from_benchmark(benchmark_file_name, outdir):
             cnt += 1
 
 
+generate_qca_and_sim_from_structure = generate_qca_and_sim_from_structure.generate_qca_and_sim_from_structure
+
+
 ###############################################################################
 #############################logic related functions###########################
 ###############################################################################
 
 
+generate_truth_from_sim = generate_truth_from_sim.generate_truth_from_sim
+
+
 def compute_logic_expression_from_truth_table(labels, truth_values):
     input_size = len(labels)-1
+
+    if len(truth_values) < 2**input_size:
+        return "Not fully polarized"
 
     ones = []
     zeros = []
@@ -109,8 +119,7 @@ def compute_logic_expression_from_truth_table(labels, truth_values):
         ret.append("*".join(tmp))
     return labels[-1] + " = " + " + ".join(ret)
 
-
-def generate_logic_from_truth(truth_file_name, output_dir):
+def load_truth_file(truth_file_name):
     #parse labels and truth values
     labels = []
     truth = []
@@ -124,6 +133,12 @@ def generate_logic_from_truth(truth_file_name, output_dir):
                 tmp.append(int(row[name]))
             truth.append(tuple(tmp))
     truth.sort()
+    return labels, truth
+
+
+def generate_logic_from_truth(truth_file_name, output_dir):
+    #parse labels and truth values
+    labels, truth = load_truth_file(truth_file_name)
 
     #compute output index
     output_index = []
@@ -138,7 +153,8 @@ def generate_logic_from_truth(truth_file_name, output_dir):
         for t in truth:
             truth_values.append(t[:output_index[0]] + (t[out_idx],))
 
-        logic_expr = compute_logic_expression_from_truth_table(labels[:output_index[0]] + [labels[out_idx]], truth_values)
+        logic_expr = compute_logic_expression_from_truth_table(labels[:output_index[0]] + [labels[out_idx]],
+                                                               truth_values)
         logic_exprs.append(logic_expr)
 
     #write logic expressions to file
@@ -158,14 +174,89 @@ def generate_logic_from_truth(truth_file_name, output_dir):
 def visit_outdir(outdir, func, appendix):
     dir_names = os.listdir(outdir)
     for dir_name in dir_names:
-        output_dir = os.path.join(outdir, dir_name)
+        output_dir = os.path.normpath(os.path.join(outdir, dir_name))
         all_files = os.listdir(output_dir)
         
         needed_files = filter(lambda x: x.endswith(appendix), all_files)
         needed_file_names = [os.path.join(output_dir, needed_file) for needed_file in needed_files]
         for needed_file_name in needed_file_names:
-            func(os.path.abspath(needed_file_name), os.path.abspath(output_dir))
+            func(os.path.normpath(os.path.abspath(needed_file_name)), os.path.normpath(os.path.abspath(output_dir)))
 
+
+def generate_statistics(benchmark_file_name, outdir):
+    benchmark_name = os.path.basename(benchmark_file_name)
+    benchmark_name = benchmark_name[:benchmark_name.find(".")]
+
+    generate_qca_and_sim_from_structure(benchmark_file_name, outdir)
+    generate_truth_from_sim(os.path.join(outdir, benchmark_name+".sim"), outdir)
+    target_truth_file_name = os.path.join(outdir, benchmark_name+".truth")
+
+    target_labels, target_truth = load_truth_file(target_truth_file_name)
+    target_truth_set = set(target_truth)
+    # with open(target_logic_file_name, 'r') as logic_file:
+    #     lines = logic_file.readlines()
+    #     target_logic_expr = lines[0]
+
+    statistics = {}
+    dir_names = os.listdir(outdir)
+    dir_names = filter(lambda x: (x.find(".") == -1), dir_names)
+    for dir_name in dir_names:
+        dir_idx = int(dir_name)
+        statistics[dir_idx] = {"total": 0, "right": 0, "wrong": 0, "error_rate": 0.0, "logic_exprs": {}}
+        #logic_exprs is a mapping from a logic_expr to a list of index representing a file name
+
+        output_dir = os.path.join(outdir, dir_name)
+        all_files = os.listdir(output_dir)
+
+        logic_exprs = {}
+        logic_files = filter(lambda x: x.endswith(".logic"), all_files)
+        for logic_file_name in logic_files:
+            base_name = os.path.basename(logic_file_name)
+            idx = int(base_name[:base_name.find(".")])
+
+            with open(os.path.join(output_dir, logic_file_name), 'r') as logic_file:
+                lines = logic_file.readlines()
+                logic_exprs[idx] = lines[0].strip("\n")
+
+        truth_files = filter(lambda x: x.endswith(".truth"), all_files)
+        for truth_file_name in truth_files:
+            base_name = os.path.basename(truth_file_name)
+            idx = int(base_name[:base_name.find(".")])
+
+            labels, truth = load_truth_file(os.path.join(output_dir, truth_file_name))
+            truth_set = set(truth)
+
+            assert(labels == target_labels)
+
+            if truth_set == target_truth_set:
+                statistics[dir_idx]["total"] += 1
+                statistics[dir_idx]["right"] += 1
+            else:
+                statistics[dir_idx]["total"] += 1
+                statistics[dir_idx]["wrong"] += 1
+                if logic_exprs[idx] in statistics[dir_idx]["logic_exprs"]:
+                    statistics[dir_idx]["logic_exprs"][logic_exprs[idx]].append(idx)
+                else:
+                    statistics[dir_idx]["logic_exprs"][logic_exprs[idx]] = [idx]
+
+        statistics[dir_idx]["error_rate"] = statistics[dir_idx]["wrong"] / statistics[dir_idx]["total"]
+
+    base_name = os.path.basename(outdir)
+    with open(os.path.join(outdir, base_name+".statistics"), 'w') as statistics_file:
+        for dir_idx in statistics.keys():
+            output_dir = os.path.join(outdir, str(dir_idx))
+
+            statistics_file.write("Missing Number : {0}\n".format(dir_idx))
+            statistics_file.write("Error Rate : {0}\n".format(statistics[dir_idx]["error_rate"]))
+
+            for logic_expr in statistics[dir_idx]["logic_exprs"].keys():
+                statistics_file.write("Logic exprssion {0} occured {1} times.\n".
+                                      format(logic_expr, len(statistics[dir_idx]["logic_exprs"][logic_expr])))
+                statistics_file.write("The qca file names for them are as follows :\n")
+                for idx in statistics[dir_idx]["logic_exprs"][logic_expr]:
+                    statistics_file.write("{0}\n".format(os.path.join(output_dir, str(idx)+".qca")))
+
+            statistics_file.write("\n========================================================================\n")
 
 ###############################################################################
 #program options
@@ -173,7 +264,7 @@ default_benchmark_file_name = ""
 default_output_dir = ""
 
 if platform.system() == "Windows":
-    default_benchmark_file_name = r"C:\msys64\common\benchmark\qcasim\majority_gate_2.txt"
+    default_benchmark_file_name = r"C:\msys64\common\benchmark\qcasim\majority_gate_1.txt"
     default_output_dir =r"C:\Users\fpeng\Documents\sim_manager"
     
 parser = argparse.ArgumentParser(description="Specify the benchmark file and output directory")
@@ -194,11 +285,15 @@ if __name__ == "__main__":
     base_name = base_name[:base_name.find(".")]
 
     outdir = os.path.join(args.outdir, base_name)
-    if not os.path.exists(outdir):
-        os.mkdir(outdir)
-    
+    if os.path.exists(outdir):
+        shutil.rmtree(outdir)
+    os.mkdir(outdir)
+
     generate_structures_from_benchmark(args.benchmark_file_name, outdir)
+    print(outdir)
     
     visit_outdir(outdir, generate_qca_and_sim_from_structure, ".txt")
     visit_outdir(outdir, generate_truth_from_sim, ".sim")
     visit_outdir(outdir, generate_logic_from_truth, ".truth")
+
+    generate_statistics(args.benchmark_file_name, outdir)

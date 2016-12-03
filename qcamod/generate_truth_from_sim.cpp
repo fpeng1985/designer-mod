@@ -106,7 +106,7 @@ void generate_truth_from_sim(const std::string &sim_file_name, const std::string
     fs::path truth_file_path(output_dir);
     truth_file_path /= (sim_file_path.stem().string() + ".truth");
 
-    cout << "generating truth value file in " << truth_file_path.string() << endl;
+    cout << "generating truth value file in " << truth_file_path.generic_string() << endl;
 
     ofstream ofs(truth_file_path.string(), ios::out);
 

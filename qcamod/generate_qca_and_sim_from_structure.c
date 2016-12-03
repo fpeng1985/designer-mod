@@ -20,9 +20,6 @@ void generate_qca_and_sim_from_structure(char *input_file_name, char *output_dir
     g_assert( g_file_test(output_dir_name, G_FILE_TEST_EXISTS) );
 
     GError *error = NULL;
-
-    g_print("generating qca and sim file from %s\n", input_file_name);
-
     //[2]create design and get "Main Cell Layer"
     QCADSubstrate *sub = NULL;
     DESIGN *design = NULL;
@@ -104,6 +101,8 @@ void generate_qca_and_sim_from_structure(char *input_file_name, char *output_dir
     VectorTable_add_inputs(pvt, design);
 
     //[5]run simulation, and construct the corresponding simulation output data structure
+    g_print("generating qca and sim file from %s\n", input_file_name);
+
     simulation_data *sim_data = run_simulation(BISTABLE, EXHAUSTIVE_VERIFICATION, design, pvt);
     SIMULATION_OUTPUT sim_output = {sim_data, design->bus_layout, FALSE};
 
