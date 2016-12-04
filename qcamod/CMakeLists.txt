@@ -8,7 +8,7 @@ set(QCAMOD_SRC
         ../src/simulation_data.c
         ../src/bistable_simulation.c
         ../src/coherence_vector.c
-        ../src/Vector_table.c
+        ../src/vector_table.c
 
         ../src/design.c
 

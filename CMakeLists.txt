@@ -1,6 +1,15 @@
 cmake_minimum_required (VERSION 3.5.1)
 project (designer-mod)
 
+#platform specific settings
+if( CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(CMAKE_C_COMPILER   c:/msys64/mingw64/bin/gcc)
+    set(CMAKE_CXX_COMPILER c:/msys64/mingw64/bin/g++)
+    link_directories(C:/msys64/mingw64/bin C:/msys64/mingw64/lib)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(BOOST_LIBRARYDIR /usr/lib/x86_64-linux-gnu)
+endif()
+
 #gtk2
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK2 REQUIRED gtk+-2.0)
@@ -34,13 +43,6 @@ set(CMAKE_C_FLAGS "-mms-bitfields -pthread")
 set(CMAKE_CXX_FLAGS         "$ENV{CXXFLAGS} -Wall -std=c++14")
 set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} -O0 -g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -msse2")
-
-#platform specific settings
-if( CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(CMAKE_C_COMPILER   c:/msys64/mingw64/bin/gcc)
-    set(CMAKE_CXX_COMPILER c:/msys64/mingw64/bin/g++)
-    link_directories(C:/msys64/mingw64/bin C:/msys64/mingw64/lib)
-endif()
 
 #program specific settings
 set(UNDO_REDO_FILES
