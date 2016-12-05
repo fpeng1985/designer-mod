@@ -41,6 +41,9 @@ SWIG_LINK_LIBRARIES(generate_truth_from_sim ${PYTHON_LIBRARIES} ${Boost_LIBRARIE
 #target_link_libraries(gen_truth ${Boost_LIBRARIES})
 
 #python scripts
-set(PY_SCRIPTS ${CMAKE_CURRENT_SOURCE_DIR}/main.py)
+set(PY_SCRIPTS
+        ${CMAKE_CURRENT_SOURCE_DIR}/main.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/qm.py
+        )
 add_custom_command(OUTPUT copy_python_scripts COMMAND ${CMAKE_COMMAND} -E copy ${PY_SCRIPTS} ${EXECUTABLE_OUTPUT_PATH})
 add_custom_target(main_py ALL DEPENDS copy_python_scripts)
