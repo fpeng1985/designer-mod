@@ -280,8 +280,11 @@ default_output_dir = ""
 
 if platform.system() == "Windows":
     default_benchmark_file_name = r"C:\msys64\common\benchmark\qcasim\majority_gate_1.txt"
-    default_output_dir =r"C:\Users\fpeng\Documents\sim_manager"
-    
+    default_output_dir = r"C:\Users\fpeng\Documents\sim_manager"
+else:
+    default_benchmark_file_name = os.path.abspath("../../qcamod/benchmark/majority_gate_1.txt")
+    default_output_dir = os.path.abspath("./sim_output")
+
 parser = argparse.ArgumentParser(description="Specify the benchmark file and output directory")
 parser.add_argument("-i", type=str, nargs='?', dest='benchmark_file_name', default=default_benchmark_file_name, help='benchmark file name')
 parser.add_argument("-o", type=str, nargs='?', dest='outdir', default=default_output_dir, help='output file directory')
