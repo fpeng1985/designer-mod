@@ -53,9 +53,11 @@ void generate_qca_and_sim_from_structure(char *input_file_name, char *output_dir
                         qcad_cell_set_function(cell, QCAD_CELL_INPUT);
                         //set cell label
                         g_strlcpy(cell_label, "I", 128);
-                        itoa(r, index, 10);
+                        sprintf(index, "%d", r);
+//                        itoa(r, index, 10);
                         g_strlcat(cell_label, index, 128);
-                        itoa(c, index, 10);
+                        sprintf(index, "%d", c);
+//                        itoa(c, index, 10);
                         g_strlcat(cell_label, index, 128);
                         qcad_cell_set_label(cell, cell_label);
                         //add cell
@@ -68,9 +70,11 @@ void generate_qca_and_sim_from_structure(char *input_file_name, char *output_dir
                         qcad_cell_set_function(cell, QCAD_CELL_OUTPUT);
                         //set cell label
                         g_strlcpy(cell_label, "O", 128);
-                        itoa(r, index, 10);
+                        sprintf(index, "%d", r);
+//                        itoa(r, index, 10);
                         g_strlcat(cell_label, index, 128);
-                        itoa(c, index, 10);
+                        sprintf(index, "%d", c);
+//                        itoa(c, index, 10);
                         g_strlcat(cell_label, index, 128);
                         qcad_cell_set_label(cell, cell_label);
                         //add cell
