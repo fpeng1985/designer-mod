@@ -4,4 +4,4 @@ from peewee import SqliteDatabase
 
 outdir = r'C:\Users\fpeng\Documents\sim_manager'
 
-db = SqliteDatabase(":memory:")
+db = SqliteDatabase(r'C:\Users\fpeng\Documents\sim_manager\qca.db')

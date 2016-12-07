@@ -11,9 +11,8 @@
 
 #include <Python.h>
 
-void generate_qca_and_sim_from_structure_imp(PyObject *structure, char *output_dir_name, char *design_name) {
+void generate_qca_and_sim_from_structure_imp(PyObject *structure, char *qca_file_name, char *sim_file_name) {
     //[1] assertions
-    g_assert( g_file_test(output_dir_name, G_FILE_TEST_EXISTS) );
     g_assert( PyList_Check(structure) );
 
     //[2]create design and get "Main Cell Layer"
@@ -93,22 +92,10 @@ void generate_qca_and_sim_from_structure_imp(PyObject *structure, char *output_d
     simulation_data *sim_data = run_simulation(BISTABLE, EXHAUSTIVE_VERIFICATION, design, pvt);
     SIMULATION_OUTPUT sim_output = {sim_data, design->bus_layout, FALSE};
 
-    //[6] compute design file name and sim file name from input_file_name and output_dir_name
-    GString *design_file_name_str = g_string_new(output_dir_name);
-    g_string_append(design_file_name_str, G_DIR_SEPARATOR_S);
-    g_string_append(design_file_name_str, design_name);
-
-    GString *sim_file_name_str = g_string_new(design_file_name_str->str);
-
-    g_string_append(design_file_name_str, ".qca");
-    g_string_append(sim_file_name_str, ".sim");
-
     //[7]generate design file and sim file
-    create_file(design_file_name_str->str, design);
-    g_string_free(design_file_name_str, TRUE);
+    create_file(qca_file_name, design);
 
-    create_simulation_output_file(sim_file_name_str->str, &sim_output);
-    g_string_free(sim_file_name_str, TRUE);
+    create_simulation_output_file(sim_file_name, &sim_output);
 
     //[8]destroy design object, reclaim its memory
     design_destroy(design);

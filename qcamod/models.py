@@ -39,12 +39,13 @@ class SimResult(BaseModel):
     qca_file_path = CharField(default="")
     sim_file_path = CharField(default="")
     truth_table = ListField(default=[])
-    logic_expr = CharField(default="")
+    logic_expr = ListField(default=[])
+    is_correct = BooleanField(default=True)
 
 
 if __name__ == "__main__":
     db.connect()
-    db.create_tables([CircuitInfo, SimResult])
+    db.create_tables([CircuitInfo, SimResult], safe=True)
 
     structure = [
         [0,  0,  1,  0,  0],
@@ -68,3 +69,4 @@ if __name__ == "__main__":
     for sim in SimResult.select():
         print(sim.structure)
         print(sim.truth_table)
+        print(sim.is_correct)

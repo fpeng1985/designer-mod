@@ -30,7 +30,7 @@ SET_SOURCE_FILES_PROPERTIES(generate_qca_and_sim_from_structure_imp.i PROPERTIES
 SWIG_ADD_MODULE(generate_qca_and_sim_from_structure_imp python generate_qca_and_sim_from_structure_imp.i generate_qca_and_sim_from_structure_imp.c)
 SWIG_LINK_LIBRARIES(generate_qca_and_sim_from_structure_imp ${PYTHON_LIBRARIES} ${GTK2_LIBRARIES} qcamod)
 
-SET_SOURCE_FILES_PROPERTIES(generate_truth_from_sim.i PROPERTIES CPLUSPLUS ON)
-SET_SOURCE_FILES_PROPERTIES(generate_truth_from_sim.i PROPERTIES SWIG_FLAGS "-includeall")
-SWIG_ADD_MODULE(generate_truth_from_sim python generate_truth_from_sim.i generate_truth_from_sim.cpp)
-SWIG_LINK_LIBRARIES(generate_truth_from_sim ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+SET_SOURCE_FILES_PROPERTIES(generate_truth_from_sim_imp.i PROPERTIES CPLUSPLUS ON)
+SET_SOURCE_FILES_PROPERTIES(generate_truth_from_sim_imp.i PROPERTIES SWIG_FLAGS "-includeall")
+SWIG_ADD_MODULE(generate_truth_from_sim_imp python generate_truth_from_sim_imp.i generate_truth_from_sim_imp.cpp)
+SWIG_LINK_LIBRARIES(generate_truth_from_sim_imp ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
