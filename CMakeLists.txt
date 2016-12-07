@@ -17,7 +17,7 @@ include_directories(${GTK2_INCLUDE_DIRS})
 link_directories(${GTK2_LIBRARY_DIRS})
 
 #boost
-find_package(Boost COMPONENTS system filesystem program_options REQUIRED)
+find_package(Boost) #COMPONENTS system REQUIRED)
 if(Boost_FOUND)
     include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 else(Boost_FOUND)

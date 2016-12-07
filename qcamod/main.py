@@ -10,7 +10,7 @@ import copy
 import shutil
 import qm
 import math
-import threading
+import multiprocessing
 import argparse
 
 from generate_qca_and_sim_from_structure_imp import generate_qca_and_sim_from_structure_imp
@@ -198,6 +198,7 @@ def generate_truth_and_logic_from_sim(name, dir_idx, file_idx):
 def simulate_circuit(name, dir_idx, file_idx):
     generate_qca_and_sim_from_structure(name, dir_idx, file_idx)
     generate_truth_and_logic_from_sim(name, dir_idx, file_idx)
+    print("{0} {1} finished".format(dir_idx, file_idx))
 
 
 def simulate_benchmark(benchmark_file_name):
@@ -208,23 +209,17 @@ def simulate_benchmark(benchmark_file_name):
     circuit = CircuitInfo.get(CircuitInfo.name == name)
     size = circuit.normal_size
 
-    threads = []
+    pool = multiprocessing.pool.Pool(4)
     n_frac = math.factorial(size)
     for dir_idx in range(size+1):
         m_frac = math.factorial(dir_idx)
         n_m_frac = math.factorial(size - dir_idx)
         tmp = n_frac // (m_frac * n_m_frac)
 
-        # for file_idx in range(tmp):
-        #     simulate_circuit(name, dir_idx, file_idx)
         for file_idx in range(tmp):
-            threads.append(threading.Thread(target=simulate_circuit, args=(name, dir_idx, file_idx)))
-
-    for thread in threads:
-        thread.start()
-
-    for thread in threads:
-        thread.join()
+            pool.apply_async(simulate_circuit, args=(name, dir_idx, file_idx))
+    pool.close()
+    pool.join()
 
 
 def create_tables():
@@ -236,6 +231,9 @@ parser = argparse.ArgumentParser(description="Specify the benchmark file path")
 parser.add_argument("-i", type=str, nargs='?', dest='benchmark_file_name', help='benchmark file name')
 
 if __name__ == "__main__":
+    import time
+    starttime = time.time()
+
     args = parser.parse_args()
 
     create_tables()
@@ -279,4 +277,10 @@ if __name__ == "__main__":
                 statistics_file.write(s.qca_file_path)
                 statistics_file.write("\n")
         statistics_file.write("\n========================================================================\n\n")
+
+    endtime = time.time()
+    interval = endtime - starttime
+    print("Total running time is {0} seconds".format(interval))
+
+
 
