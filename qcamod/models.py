@@ -4,30 +4,14 @@ from peewee import *
 from app import db
 
 
-class CustomContainerField(Field):
-    db_field = 'custom_container'
+class ListField(Field):
+    db_field = 'list'
 
     def db_value(self, value):
         return str(value)
 
     def python_value(self, value):
         return eval(value)
-
-
-class LogicLabelsField(CustomContainerField):
-    db_field = 'labels'
-
-
-class MissingIndicesField(CustomContainerField):
-    db_field = 'missing_indices'
-
-
-class StructureField(CustomContainerField):
-    db_field = 'structure'
-
-
-class TruthTableField(CustomContainerField):
-    db_field = 'truth_table'
 
 
 SqliteDatabase.register_fields({
@@ -48,28 +32,19 @@ class CircuitInfo(BaseModel):
     input_size = IntegerField(default=0)
     output_size = IntegerField(default=0)
     normal_size = IntegerField(default=0)
-    labels = LogicLabelsField(default=[])
+    labels = ListField(default=[])
 
 
 class SimResult(BaseModel):
     circuit = ForeignKeyField(CircuitInfo, related_name="sim_results")
     dir_idx = IntegerField(default=0)
     file_idx = IntegerField(default=0)
-    structure = StructureField(default=[])
-    missing_indices = MissingIndicesField(default=[])
+    structure = ListField(default=[])
+    missing_indices = ListField(default=[])
     qca_file_path = CharField(default="")
     sim_file_path = CharField(default="")
-    truth_table = TruthTableField(default=[])
+    truth_table = ListField(default=[])
     logic_expr = CharField(default="")
-
-
-class Statistics(BaseModel):
-    circuit = ForeignKeyField(CircuitInfo, related_name="statistics")
-    dir_idx = IntegerField(default=0)
-    total_count = IntegerField(default=0)
-    correct_size = IntegerField(default=0)
-    incorrect_size = IntegerField(default=0)
-    error_rate = FloatField(default=0.0)
 
 
 if __name__ == "__main__":
