@@ -285,7 +285,7 @@ else:
     default_benchmark_file_name = os.path.abspath("../../qcamod/benchmark/majority_gate_1.txt")
     default_output_dir = os.path.abspath("./sim_output")
 
-parser = argparse.ArgumentParser(description="Specify the benchmark file and output directory")
+parser = argparse.ArgumentParser(description="Specify the benchmark file path")
 parser.add_argument("-i", type=str, nargs='?', dest='benchmark_file_name', default=default_benchmark_file_name, help='benchmark file name')
 parser.add_argument("-o", type=str, nargs='?', dest='outdir', default=default_output_dir, help='output file directory')
 

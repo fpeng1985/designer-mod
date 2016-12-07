@@ -11,6 +11,7 @@ import shutil
 import qm
 import math
 import threading
+import argparse
 
 from generate_qca_and_sim_from_structure_imp import generate_qca_and_sim_from_structure_imp
 from generate_truth_from_sim_imp import generate_truth_from_sim_imp
@@ -45,8 +46,8 @@ def compute_logic_expression_from_truth_table(labels, truth_values):
         tmp_val = 0
         for j in range(input_size):
             tmp_val += truth_values[i][j]*(2**(input_size-1-j))
-        if i < len(truth_values) -1:
-            if truth_values[i][:-1]==truth_values[i+1][:-1] and truth_values[i][-1] != truth_values[i+1][-1]:
+        if i < len(truth_values) - 1:
+            if truth_values[i][:-1] == truth_values[i+1][:-1] and truth_values[i][-1] != truth_values[i+1][-1]:
                 dc.append(tmp_val)
                 i += 2
                 continue
@@ -110,8 +111,9 @@ def load_benchmark(benchmark_file_name):
     #this order of labels is very important, so here comes a sorting
     labels.sort()
 
-    circuit = CircuitInfo.create(name=name, input_size=input_size, output_size=output_size,
-                                 normal_size=normal_size, labels=labels)
+    circuit,created = CircuitInfo.get_or_create(name=name,
+                                                defaults={"input_size": input_size, "output_size": output_size,
+                                                          "normal_size": normal_size, "labels": labels})
     circuit.save()
 
     for dir_idx in range(normal_size+1):
@@ -125,8 +127,8 @@ def load_benchmark(benchmark_file_name):
             for r, c in comb:
                 cur_structure[r][c] = 0
             # print("{0} {1}".format(dir_idx, file_idx))
-            sim_result = SimResult.create(circuit=circuit, dir_idx=dir_idx, file_idx=file_idx,
-                                          structure=cur_structure, missing_indices=comb)
+            sim_result, created = SimResult.get_or_create(circuit=circuit, dir_idx=dir_idx, file_idx=file_idx,
+                                                          defaults={"structure": cur_structure, "missing_indices": comb})
             sim_result.save()
 
             file_idx += 1
@@ -213,16 +215,16 @@ def simulate_benchmark(benchmark_file_name):
         n_m_frac = math.factorial(size - dir_idx)
         tmp = n_frac // (m_frac * n_m_frac)
 
-        for file_idx in range(tmp):
-            simulate_circuit(name, dir_idx, file_idx)
         # for file_idx in range(tmp):
-        #     threads.append(threading.Thread(target=simulate_circuit, args=(name, dir_idx, file_idx)))
-    #
-    # for thread in threads:
-    #     thread.start()
-    #
-    # for thread in threads:
-    #     thread.join()
+        #     simulate_circuit(name, dir_idx, file_idx)
+        for file_idx in range(tmp):
+            threads.append(threading.Thread(target=simulate_circuit, args=(name, dir_idx, file_idx)))
+
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
 
 
 def create_tables():
@@ -230,17 +232,18 @@ def create_tables():
     db.create_tables([CircuitInfo, SimResult], safe=True)
 
 
+parser = argparse.ArgumentParser(description="Specify the benchmark file path")
+parser.add_argument("-i", type=str, nargs='?', dest='benchmark_file_name', help='benchmark file name')
+
 if __name__ == "__main__":
-    # create_tables()
-    # benchmark_file_name = r"C:\Users\fpeng\Data\Workspace\HFUT\designer-mod\qcamod\benchmark\majority_gate_1.txt"
-    #
-    # simulate_benchmark(benchmark_file_name)
+    args = parser.parse_args()
 
-    name = "majority_gate_1"
+    create_tables()
 
-    db = SqliteDatabase(r'C:\Users\fpeng\Documents\sim_manager\qca.db')
-    db.connect()
+    simulate_benchmark(args.benchmark_file_name)
 
+    name = os.path.basename(args.benchmark_file_name)
+    name = name[:name.find(".")]
     circuit = CircuitInfo.get(CircuitInfo.name == name)
 
     statistics_file_name = composite_file_name(name)
