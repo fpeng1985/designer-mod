@@ -14,12 +14,7 @@ class ListField(Field):
         return eval(value)
 
 
-SqliteDatabase.register_fields({
-    'labels': 'labels',
-    'missing_indices': 'missing_indices',
-    'structure': 'structure',
-    'truth_table': 'truth_table'
-})
+SqliteDatabase.register_fields({'list': 'list'})
 
 
 class BaseModel(Model):
@@ -28,7 +23,7 @@ class BaseModel(Model):
 
 
 class CircuitInfo(BaseModel):
-    name = CharField(default="")
+    name = CharField(unique=True)
     input_size = IntegerField(default=0)
     output_size = IntegerField(default=0)
     normal_size = IntegerField(default=0)
@@ -65,6 +60,10 @@ if __name__ == "__main__":
 
     sim_result = SimResult.create(circuit=circuit_info, dir_idx=1, file_idx=1, structure=structure)
     sim_result.save()
+
+    for circuit in CircuitInfo.select():
+        print(circuit.name)
+        print(circuit.labels)
 
     for sim in SimResult.select():
         print(sim.structure)

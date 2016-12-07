@@ -11,7 +11,7 @@
 
 #include <Python.h>
 
-void generate_qca_and_sim_from_structure(PyObject *structure, char *output_dir_name, char *design_name) {
+void generate_qca_and_sim_from_structure_imp(PyObject *structure, char *output_dir_name, char *design_name) {
     //[1] assertions
     g_assert( g_file_test(output_dir_name, G_FILE_TEST_EXISTS) );
     g_assert( PyList_Check(structure) );
