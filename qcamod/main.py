@@ -296,6 +296,9 @@ if __name__ == "__main__":
     # generate_truth_from_sim(r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1\1.sim", r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1")
     # generate_logic_from_truth(r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1\1.truth", r"C:\Users\fpeng\Documents\sim_manager\majority_gate_1\1")
 
+    import datetime
+    starttime = datetime.datetime.now()
+
     args = parser.parse_args()
     
     #make output files dir
@@ -324,3 +327,7 @@ if __name__ == "__main__":
     print("generating statistics start")
     generate_statistics(args.benchmark_file_name, outdir)
     print("generating statistics finished")
+
+    endtime = datetime.datetime.now()
+    interval = (endtime - starttime).seconds
+    print("Totol running time: {0} seconds".format(interval))
