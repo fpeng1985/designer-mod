@@ -11,6 +11,7 @@ import shutil
 import qm
 import math
 import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import argparse
 
 from generate_qca_and_sim_from_structure_imp import generate_qca_and_sim_from_structure_imp
@@ -21,6 +22,16 @@ import peewee
 ########################################################################################
 ##################################helper functions######################################
 ########################################################################################
+
+
+def print_timing(func):
+    def wrapper(*arg):
+        t1 = time.time()
+        res = func(*arg)
+        t2 = time.time()
+        print('%s took %0.3f ms' % (getattr(func, '__name__'), (t2-t1)*1000.0))
+        return res
+    return wrapper
 
 
 def composite_file_name(circuit_name, dir_idx=None, file_idx=None, appendix=None):
@@ -209,7 +220,9 @@ def simulate_benchmark(benchmark_file_name):
     circuit = CircuitInfo.get(CircuitInfo.name == name)
     size = circuit.normal_size
 
-    pool = multiprocessing.pool.Pool(4)
+    # executor = ProcessPoolExecutor(max_workers=4)
+    # executor = ThreadPoolExecutor(max_workers=4)
+    pool = multiprocessing.Pool(processes=4)
     n_frac = math.factorial(size)
     for dir_idx in range(size+1):
         m_frac = math.factorial(dir_idx)
@@ -217,9 +230,10 @@ def simulate_benchmark(benchmark_file_name):
         tmp = n_frac // (m_frac * n_m_frac)
 
         for file_idx in range(tmp):
+            # executor.submit(simulate_circuit, name, dir_idx, file_idx)
             pool.apply_async(simulate_circuit, args=(name, dir_idx, file_idx))
-    pool.close()
-    pool.join()
+    # pool.close()
+    # pool.join()
 
 
 def create_tables():
@@ -245,6 +259,7 @@ if __name__ == "__main__":
     circuit = CircuitInfo.get(CircuitInfo.name == name)
 
     statistics_file_name = composite_file_name(name)
+    statistics_file_name = os.path.join(statistics_file_name, name)
     statistics_file_name = os.path.join(statistics_file_name, ".statistics")
 
     statistics_file = open(statistics_file_name, "w")
