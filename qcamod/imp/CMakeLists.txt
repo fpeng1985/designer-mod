@@ -20,7 +20,7 @@ set(QCAMOD_SRC
         ${PROJECT_SOURCE_DIR}/src/generic_utils.c
         )
 add_library(qcamod SHARED ${QCAMOD_SRC})
-target_link_libraries(qcamod ${GTK2_LIBRARIES})
+target_link_libraries(qcamod ${GTK3_LIBRARIES})
 target_compile_options(qcamod PUBLIC -DSTDIO_FILEIO)
 
 include_directories(${PROJECT_SOURCE_DIR}/qcamod/imp)
@@ -28,7 +28,7 @@ include_directories(${PROJECT_SOURCE_DIR}/qcamod/imp)
 #swig files
 SET_SOURCE_FILES_PROPERTIES(generate_qca_and_sim_from_structure_imp.i PROPERTIES SWIG_FLAGS "-includeall")
 SWIG_ADD_MODULE(generate_qca_and_sim_from_structure_imp python generate_qca_and_sim_from_structure_imp.i generate_qca_and_sim_from_structure_imp.c)
-SWIG_LINK_LIBRARIES(generate_qca_and_sim_from_structure_imp ${PYTHON_LIBRARIES} ${GTK2_LIBRARIES} qcamod)
+SWIG_LINK_LIBRARIES(generate_qca_and_sim_from_structure_imp ${PYTHON_LIBRARIES} ${GTK3_LIBRARIES} qcamod)
 
 SET_SOURCE_FILES_PROPERTIES(generate_truth_from_sim_imp.i PROPERTIES CPLUSPLUS ON)
 SET_SOURCE_FILES_PROPERTIES(generate_truth_from_sim_imp.i PROPERTIES SWIG_FLAGS "-includeall")

@@ -9,5 +9,4 @@ set(PY_SCRIPTS
 add_custom_command(OUTPUT copy_python_scripts COMMAND ${CMAKE_COMMAND} -E copy ${PY_SCRIPTS} ${EXECUTABLE_OUTPUT_PATH})
 add_custom_target(copy_py ALL DEPENDS copy_python_scripts)
 
-
 add_subdirectory(imp)
