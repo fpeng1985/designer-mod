@@ -6,14 +6,89 @@
 #include <stdio.h>
 #include <glib.h>
 
-//#ifndef STDIO_FILEIO
-//#define STDIO_FILEIO
-//#endif
+#include "../../src/fileio.h"
+#include "../../src/global_consts.h"
+#include "../../src/objects/QCADDOContainer.h"
+int main()
+{
+    FILE * pFile;
+    long lSize;
+    char * buffer;
+    size_t result;
 
-#include "../src/fileio.h"
-#include "../src/global_consts.h"
-#include "../src/objects/QCADDOContainer.h"
+    /* 若要一个byte不漏地读入整个文件，只能采用二进制方式打开 */
+    pFile = fopen ("test.txt", "rb" );
+    if (pFile==NULL)
+    {
+        fputs ("File error",stderr);
+        exit (1);
+    }
 
+    /* 获取文件大小 */
+    fseek (pFile , 0 , SEEK_END);
+    lSize = ftell (pFile);
+    rewind (pFile);
+
+    /* 分配内存存储整个文件 */
+    buffer = (char*) malloc (sizeof(char)*lSize);
+    if (buffer == NULL)
+    {
+        fputs ("Memory error",stderr);
+        exit (2);
+    }
+
+    /* 将文件拷贝到buffer中 */
+    result = fread (buffer,1,lSize,pFile);
+    if (result != lSize)
+    {
+        fputs ("Reading error",stderr);
+        exit (3);
+    }
+    /* 现在整个文件已经在buffer中，可由标准输出打印内容 */
+    printf("%s", buffer);
+
+    /* 结束演示，关闭文件并释放内存 */
+    fclose (pFile);
+    free (buffer);
+
+
+
+
+
+
+
+    char str[80] = "This.is - www.w3cschool.cc - web.site";
+
+    char d1[2] = "-";
+    char d2[2] = ".";
+
+    char *line;
+    char *tok;
+
+    /* 获取第一个子字符串 */
+    line = strtok(str, d1);
+
+    /* 继续获取其他的子字符串 */
+    while( line != NULL ) {
+
+        size_t sz = strlen(line) + 1;
+        char *tmp = (char *)malloc(sz);
+        memcpy(tmp, line, sz);
+
+        char *t = strtok(tmp, d2);
+        while (t!= NULL) {
+            printf("%s\n", t);
+
+            t = strtok(NULL, d2);
+        }
+
+        free(tmp);
+
+        line = strtok(NULL, d1);
+    }
+
+    return(0);
+}
 void generate_qca_and_sim_from_structure(char *input_file_name, char *output_dir_name) {
 
     g_assert( g_file_test(input_file_name, G_FILE_TEST_EXISTS) );
