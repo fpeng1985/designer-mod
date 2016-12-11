@@ -1,33 +1,5 @@
-#compile QCADesigner code as a library named libqcamod
-set(QCAMOD_SRC
-        ${STDIO_FILEIO_FILES}
-        ../src/fileio_helpers.c
-        ../src/custom_widgets.c
-
-        ../src/simulation.c
-        ../src/simulation_data.c
-        ../src/bistable_simulation.c
-        ../src/coherence_vector.c
-        ../src/vector_table.c
-
-        ../src/design.c
-
-        ${OBJECT_FILES}
-        ../src/objects/object_helpers.c
-
-        ../src/exp_array.c
-        ../src/hsl2rgb.c
-        ../src/generic_utils.c
-        )
-add_library(qcamod SHARED ${QCAMOD_SRC})
-target_link_libraries(qcamod ${GTK2_LIBRARIES})
-target_compile_options(qcamod PUBLIC -DSTDIO_FILEIO)
 
 #swig files
-SET_SOURCE_FILES_PROPERTIES(imp/generate_qca_and_sim_from_structure.i PROPERTIES SWIG_FLAGS "-includeall")
-SWIG_ADD_MODULE(generate_qca_and_sim_from_structure python imp/generate_qca_and_sim_from_structure.i imp/generate_qca_and_sim_from_structure.c)
-SWIG_LINK_LIBRARIES(generate_qca_and_sim_from_structure ${PYTHON_LIBRARIES} ${GTK2_LIBRARIES} qcamod)
-
 SET_SOURCE_FILES_PROPERTIES(generate_truth_from_sim.i PROPERTIES CPLUSPLUS ON)
 SET_SOURCE_FILES_PROPERTIES(generate_truth_from_sim.i PROPERTIES SWIG_FLAGS "-includeall")
 SWIG_ADD_MODULE(generate_truth_from_sim python generate_truth_from_sim.i generate_truth_from_sim.cpp)
@@ -47,3 +19,5 @@ set(PY_SCRIPTS
         )
 add_custom_command(OUTPUT copy_python_scripts COMMAND ${CMAKE_COMMAND} -E copy ${PY_SCRIPTS} ${EXECUTABLE_OUTPUT_PATH})
 add_custom_target(main_py ALL DEPENDS copy_python_scripts)
+
+add_subdirectory(imp)
