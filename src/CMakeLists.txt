@@ -2,6 +2,11 @@ add_definitions(-DPACKAGE=\"QCADesigner\")
 add_definitions(-DVERSION="2.0.3")
 #########################################################################
 
+#gtk+-2.0
+pkg_check_modules(GTK2 REQUIRED gtk+-2.0)
+include_directories(${GTK2_INCLUDE_DIRS})
+link_directories(${GTK2_LIBRARY_DIRS})
+
 set(QCADesigner_SRC
         ${UNDO_REDO_FILES}
         ${STDIO_FILEIO_FILES}
@@ -75,9 +80,9 @@ set(QCADesigner_SRC
         simulation_data.c                       simulation_data.h
         main.c
         )
-#add_executable(QCADesigner ${QCADesigner_SRC})
-#target_link_libraries(QCADesigner ${GTK2_LIBRARIES})
-#target_compile_options(QCADesigner PUBLIC -DSTDIO_FILEIO -DUNDO_REDO -DGTK_GUI -DDESIGNER)
+add_executable(QCADesigner ${QCADesigner_SRC})
+target_link_libraries(QCADesigner ${GTK2_LIBRARIES})
+target_compile_options(QCADesigner PUBLIC -DSTDIO_FILEIO -DUNDO_REDO -DGTK_GUI -DDESIGNER)
 
 #########################################################################
 
@@ -105,9 +110,9 @@ set(batch_sim_SRC
         main_batch_sim.c
         )
 
-#add_executable(batch_sim ${batch_sim_SRC})
-#target_link_libraries(batch_sim ${GTK2_LIBRARIES})
-#target_compile_options(batch_sim PUBLIC -DSTDIO_FILEIO)
+add_executable(batch_sim ${batch_sim_SRC})
+target_link_libraries(batch_sim ${GTK2_LIBRARIES})
+target_compile_options(batch_sim PUBLIC -DSTDIO_FILEIO)
 
 #########################################################################
 
@@ -145,9 +150,9 @@ set(graph_dialog_SRC
         main_graph_dialog.c
         )
 
-#add_executable(graph_dialog ${graph_dialog_SRC})
-#target_compile_options(graph_dialog PUBLIC -DSTDIO_FILEIO -DGTK_GUI)
-#target_link_libraries(graph_dialog ${GTK2_LIBRARIES})
+add_executable(graph_dialog ${graph_dialog_SRC})
+target_compile_options(graph_dialog PUBLIC -DSTDIO_FILEIO -DGTK_GUI)
+target_link_libraries(graph_dialog ${GTK2_LIBRARIES})
 
 #########################################################################
 
