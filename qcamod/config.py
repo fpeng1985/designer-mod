@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-# from peewee import SqliteDatabase
-# from bsddb3 import db
+from peewee import SqliteDatabase
 
 
 outdir = os.path.join(os.getcwd(), "output")
 
+sqlite3_db = SqliteDatabase(":memory:")
