@@ -6,60 +6,61 @@ import itertools
 import math
 import multiprocessing
 import os
+import subprocess
 import shutil
 
 from bsddb3 import db
-from peewee import *
+# from peewee import *
 import qm
 
 from generate_qca_and_sim_from_structure_imp import generate_qca_and_sim_from_structure_imp
 from generate_truth_from_sim_imp import generate_truth_from_sim_imp
 
-from config import outdir, sqlite3_db
+from config import outdir
 
 
-class ListField(Field):
-    db_field = 'list'
-
-    def db_value(self, value):
-        return str(value)
-
-    def python_value(self, value):
-        return eval(value)
-
-
-SqliteDatabase.register_fields({'list': 'list'})
-
-
-class BaseModel(Model):
-    class Meta:
-        database = sqlite3_db
-
-
-class CircuitInfo(BaseModel):
-    name = CharField(unique=True)
-    input_size = IntegerField(default=0)
-    output_size = IntegerField(default=0)
-    normal_size = IntegerField(default=0)
-    labels = ListField(default=[])
-
-
-class SimResult(BaseModel):
-    circuit = ForeignKeyField(CircuitInfo, related_name="sim_results")
-    dir_idx = IntegerField(default=0)
-    file_idx = IntegerField(default=0)
-    structure = ListField(default=[])
-    missing_indices = ListField(default=[])
-    qca_file_path = CharField(default="")
-    sim_file_path = CharField(default="")
-    truth_table = ListField(default=[])
-    logic_expr = ListField(default=[])
-    is_correct = BooleanField(default=True)
-
-
-def create_tables():
-    sqlite3_db.connect()
-    sqlite3_db.create_tables([CircuitInfo, SimResult], safe=True)
+# class ListField(Field):
+#     db_field = 'list'
+#
+#     def db_value(self, value):
+#         return str(value)
+#
+#     def python_value(self, value):
+#         return eval(value)
+#
+#
+# SqliteDatabase.register_fields({'list': 'list'})
+#
+#
+# class BaseModel(Model):
+#     class Meta:
+#         database = sqlite3_db
+#
+#
+# class CircuitInfo(BaseModel):
+#     name = CharField(unique=True)
+#     input_size = IntegerField(default=0)
+#     output_size = IntegerField(default=0)
+#     normal_size = IntegerField(default=0)
+#     labels = ListField(default=[])
+#
+#
+# class SimResult(BaseModel):
+#     circuit = ForeignKeyField(CircuitInfo, related_name="sim_results")
+#     dir_idx = IntegerField(default=0)
+#     file_idx = IntegerField(default=0)
+#     structure = ListField(default=[])
+#     missing_indices = ListField(default=[])
+#     qca_file_path = CharField(default="")
+#     sim_file_path = CharField(default="")
+#     truth_table = ListField(default=[])
+#     logic_expr = ListField(default=[])
+#     is_correct = BooleanField(default=True)
+#
+#
+# def create_tables():
+#     sqlite3_db.connect()
+#     sqlite3_db.create_tables([CircuitInfo, SimResult], safe=True)
 
 
 ########################################################################################
@@ -146,6 +147,7 @@ class QCADB:
         self.dbenv.open(self.dbdir, db.DB_CREATE | db.DB_INIT_MPOOL | db.DB_INIT_LOCK | db.DB_INIT_LOG | db.DB_INIT_TXN)
 
     def _create_table(self, dbname, dbvalues):
+        print(dbname)
         txn = self.dbenv.txn_begin(flags=db.DB_TXN_BULK)
         cur_db = db.DB(self.dbenv)
         cur_db.open(self.filename, dbname=dbname, dbtype=db.DB_BTREE, flags=db.DB_CREATE, txn=txn)
@@ -209,8 +211,9 @@ class QCADB:
                 for r, c in comb:
                     cur_structure[r][c] = 0
 
+                print(dir_idx, file_idx)
                 pool.apply_async(self._create_table, args=("_".join([str(dir_idx), str(file_idx)]),
-                                                           {"structure": cur_structure, "missing_indices": comb}))
+                                                     {"structure": cur_structure, "missing_indices": comb}))
                 file_idx += 1
 
         pool.close()
@@ -354,7 +357,57 @@ class QCADB:
         pool.join()
 
     def generate_statistic(self):
-        pass
+        txn = self.dbenv.txn_begin(flags=db.DB_TXN_BULK)
+        circuit_db = db.DB(self.dbenv)
+        circuit_db.open(self.filename, dbname="circuit", txn=txn)
+
+        normal_size = eval(circuit_db.get("normal_size".encode(), txn=txn))
+
+        with open(os.path.join(outdir, self.design_name+"statistics"), "w") as statistics_file:
+            n_frac = math.factorial(normal_size)
+            for dir_idx in range(normal_size+1):
+                total_count = 0
+                error_count = 0
+                logic_exprs = {}
+
+                m_frac = math.factorial(dir_idx)
+                n_m_frac = math.factorial(normal_size - dir_idx)
+                tmp = n_frac // (m_frac * n_m_frac)
+
+                for file_idx in range(tmp):
+                    cur_db = db.DB(self.dbenv)
+                    print("hello", dir_idx, file_idx)
+                    cur_db.open(self.filename, dbname="_".join([str(dir_idx), str(file_idx)]), txn=txn)
+
+                    total_count += 1
+                    is_correct = eval(cur_db.get("is_correct".encode(), txn=txn))
+                    if not is_correct:
+                        error_count += 1
+
+                    logic_expr = eval(cur_db.get("logic_expr".encode(), txn=txn))
+                    qca_file_path = eval(cur_db.get("qca_file_path".encode(), txn=txn))
+                    if logic_expr in logic_exprs:
+                        logic_exprs[logic_expr].append(qca_file_path)
+                    else:
+                        logic_exprs[logic_expr] = [qca_file_path]
+
+                    statistics_file.write("Missing Pattern : {0}\n".format(dir_idx))
+                    statistics_file.write("Total Number : {0}\n".format(total_count))
+                    statistics_file.write("Error Number : {0}\n".format(error_count))
+                    statistics_file.write("Error Rate : {0}\n".format(error_count/total_count))
+                    statistics_file.write("\n")
+
+                    for logic_expr, qca_file_list in logic_exprs.items():
+                        statistics_file.write("Logic exprssion {0} occured {1} times.\n".format(logic_expr,
+                                                                                                len(qca_file_list)))
+                        statistics_file.write("The qca file names for them are as follows :\n")
+                        for qca_file_path in qca_file_list:
+                            statistics_file.write(qca_file_path)
+                            statistics_file.write("\n")
+                    statistics_file.write("\n=========================================="
+                                          "==============================\n\n")
+
+
 
 
 # if __name__ == "__main__":
@@ -388,3 +441,4 @@ class QCADB:
 if __name__ == "__main__":
     qcadb = QCADB("./output", "majority_gate_1")
     qcadb.simulate_benchmark("/home/fpeng/Workspace/designer-mod/qcamod/benchmark/majority_gate_1.txt")
+    qcadb.generate_statistic()
