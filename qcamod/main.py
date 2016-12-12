@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from app import *
+from config import *
 from models import *
 
 import os
@@ -11,13 +11,18 @@ import shutil
 import qm
 import math
 import multiprocessing
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import argparse
 
 from generate_qca_and_sim_from_structure_imp import generate_qca_and_sim_from_structure_imp
 from generate_truth_from_sim_imp import generate_truth_from_sim_imp
 
-import peewee
+
+########################################################################################
+##################################global variables######################################
+########################################################################################
+circuit_info = {}
+sim_results = []
+
 
 ########################################################################################
 ##################################helper functions######################################

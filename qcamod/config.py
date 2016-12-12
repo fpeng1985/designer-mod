@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from peewee import SqliteDatabase
-from playhouse.sqliteq import SqliteQueueDatabase
+import os
+# from peewee import SqliteDatabase
+# from bsddb3 import db
 
-outdir = r'C:\Users\fpeng\Documents\sim_manager'
 
-db = SqliteQueueDatabase(r'C:\Users\fpeng\Documents\sim_manager\qca.db')
+outdir = os.path.join(os.getcwd(), "output")
+
