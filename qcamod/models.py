@@ -4,19 +4,80 @@ import copy
 import ctypes
 import fileinput
 import itertools
-import os
-import qm
-import argparse
-import platform
-import shutil
 import multiprocessing
+import os
+import shutil
 import time
+
+from peewee import *
+import qm
 
 from generate_qca_and_sim_from_structure_imp import generate_qca_and_sim_from_structure_imp
 from generate_truth_from_sim_imp import generate_truth_from_sim_imp
 
-from config import outdir
+from config import outdir, db
 
+
+########################################################################################
+#######################SimResult database schema definition#############################
+########################################################################################
+
+class ListField(Field):
+    db_field = 'list'
+
+    def db_value(self, value):
+        return str(value)
+
+    def python_value(self, value):
+        return eval(value)
+
+SqliteDatabase.register_fields({'list': 'list'})
+
+
+class SimResult(Model):
+    class Meta:
+        database = db
+
+    name = CharField(default="")
+    dir_idx = IntegerField(default=0)
+    file_idx = IntegerField(default=0)
+    structure = ListField(default=[])
+    missing_indices = ListField(default=[])
+    qca_file_path = CharField(default="")
+    sim_file_path = CharField(default="")
+    truth_table = ListField(default=[])
+    logic_expr = ListField(default=[])
+    is_correct = BooleanField(default=True)
+
+
+def create_tables():
+    db.connect()
+    db.create_tables([SimResult], safe=True)
+
+
+########################################################################################
+####################multiprocessing shared memory Structure definition##################
+########################################################################################
+
+
+class CircuitInfo(ctypes.Structure):
+    _fields_ = [
+        ("name", ctypes.c_wchar_p),
+        ("input_size", ctypes.c_int),
+        ("output_size", ctypes.c_int),
+        ("normal_size", ctypes.c_int),
+        ("labels", ctypes.py_object),
+        ("structure", ctypes.py_object),
+        ("qca_file_path", ctypes.c_wchar_p),
+        ("sim_file_path", ctypes.c_wchar_p),
+        ("truth_table", ctypes.py_object),
+        ("logic_expr", ctypes.py_object)
+
+    ]
+
+########################################################################################
+#####################################decorator##########################################
+########################################################################################
 
 def print_timing(func):
     def wrapper(*arg):
@@ -26,6 +87,11 @@ def print_timing(func):
         print('%s took %0.3f ms' % (getattr(func, '__name__'), (t2-t1)*1000.0))
         return res
     return wrapper
+
+
+########################################################################################
+##################################helper functions######################################
+########################################################################################
 
 
 def composite_file_name(circuit_name, dir_idx=None, file_idx=None, appendix=None):
@@ -75,20 +141,105 @@ def compute_logic_expression_from_truth_table(labels, truth_values):
     return labels[-1] + " = " + " + ".join(ret)
 
 
-class CircuitInfo(ctypes.Structure):
-    _fields_ = [
-        ("name", ctypes.c_wchar_p),
-        ("input_size", ctypes.c_int),
-        ("output_size", ctypes.c_int),
-        ("normal_size", ctypes.c_int),
-        ("labels", ctypes.py_object),
-        ("structure", ctypes.py_object),
-        ("qca_file_path", ctypes.c_wchar_p),
-        ("sim_file_path", ctypes.c_wchar_p),
-        ("truth_table", ctypes.py_object),
-        ("logic_expr", ctypes.py_object)
+########################################################################################
+##################################main functions########################################
+########################################################################################
 
-    ]
+
+@print_timing
+def load_benchmark(benchmark_file_name, circuit_info, args_list):
+    assert(os.path.exists(benchmark_file_name))
+    design_name = os.path.basename(benchmark_file_name)
+    design_name = design_name[:design_name.find(".")]
+
+    #clean the output directory
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+
+    dbdir = os.path.join(outdir, design_name)
+    if os.path.exists(dbdir):
+        shutil.rmtree(dbdir)
+    os.mkdir(dbdir)
+
+    #compute the circuit infos
+    structure = []
+    for line in fileinput.input(benchmark_file_name):
+        line_val = [int(x) for x in line.split("\t")]
+        structure.append(line_val)
+
+    input_size, output_size, normal_size, labels, normals = 0, 0, 0, [], []
+    for r in range(len(structure)):
+        for c in range(len(structure[r])):
+            if structure[r][c] == 1:
+                normal_size += 1
+                normals.append((r, c))
+            elif structure[r][c] == 0:
+                continue
+            elif structure[r][c] == -1:
+                input_size += 1
+                labels.append("I" + str(r) + str(c))
+            elif structure[r][c] == -2:
+                output_size += 1
+                labels.append("O" + str(r) + str(c))
+
+    labels.sort() #this order of labels is very important, so here comes a sorting
+
+    #simulate the original circuit structure
+    benchmark_output_dir = composite_file_name(dbdir, 0)
+    if not os.path.exists(benchmark_output_dir):
+        os.mkdir(benchmark_output_dir)
+
+    qca_file_name = composite_file_name(design_name, 0, 0, ".qca")
+    sim_file_name = composite_file_name(design_name, 0, 0, ".sim")
+
+    generate_qca_and_sim_from_structure_imp(structure, qca_file_name, sim_file_name)
+    truth_table = generate_truth_from_sim_imp(sim_file_name, input_size)
+
+    output_idx = range(len(labels))[input_size:]
+
+    logic_expr = []
+    for out_idx in output_idx:
+        truth_values = []
+        for t in truth_table:
+            truth_values.append(t[:input_size] + (t[out_idx],))
+
+        expr = compute_logic_expression_from_truth_table(labels[:input_size] + [labels[out_idx]],
+                                                         truth_values)
+        logic_expr.append(expr)
+
+    #save the circuit infos into a shared memory variable
+    circuit_info.name = design_name
+    circuit_info.input_size = input_size
+    circuit_info.output_size = output_size
+    circuit_info.normal_size = normal_size
+    circuit_info.labels = labels
+    circuit_info.structure = structure
+    circuit_info.qca_file_path = qca_file_name
+    circuit_info.sim_file_path = sim_file_name
+    circuit_info.truth_table = truth_table
+    circuit_info.logic_expr = logic_expr
+
+    #populate the args_list for all the other structures
+    assert(isinstance(args_list, list))
+    args_list.clear()
+
+    for dir_idx in range(1, normal_size+1):
+        cur_output_dir = composite_file_name(dbdir, dir_idx)
+        if not os.path.exists(cur_output_dir):
+            os.mkdir(cur_output_dir)
+
+        combinations = itertools.combinations(normals, dir_idx)
+        file_idx = 0
+        for comb in combinations:
+            cur_structure = copy.deepcopy(structure)
+            for r, c in comb:
+                cur_structure[r][c] = 0
+            args_list.append({"dir_idx": dir_idx, "file_idx": file_idx,
+                              "structure": cur_structure, "missing_indices": comb})
+            file_idx += 1
+
+    #create sqlite3 database
+    create_tables()
 
 
 def simulate_circuit(circuit_info, args):
@@ -127,9 +278,7 @@ def simulate_circuit(circuit_info, args):
         logic_expr.append(expr)
 
     #compute is_correct
-    is_correct = True
-    if dir_idx != 0 or file_idx != 0:
-        is_correct = set(circuit_info.truth_table) == set(truth_table)
+    is_correct = set(circuit_info.truth_table) == set(truth_table)
 
     #save the computed result into database
     args["qca_file_path"] = qca_file_name
@@ -141,91 +290,18 @@ def simulate_circuit(circuit_info, args):
     return args
 
 
-def load_benchmark(benchmark_file_name, circuit_info, args_list):
-    assert(os.path.exists(benchmark_file_name))
-    design_name = os.path.basename(benchmark_file_name)
-    design_name = design_name[:design_name.find(".")]
+class ManagedArgsUpdater:
+    def __init__(self, lst, lock):
+        self.lst = lst
+        self.lock = lock
 
-    #clean the output directory
-    if not os.path.exists(outdir):
-        os.mkdir(outdir)
-
-    dbdir = os.path.join(outdir, design_name)
-    if os.path.exists(dbdir):
-        shutil.rmtree(dbdir)
-    os.mkdir(dbdir)
-
-    #compute the circuit infos
-    structure = []
-    for line in fileinput.input(benchmark_file_name):
-        line_val = [int(x) for x in line.split("\t")]
-        structure.append(line_val)
-
-    input_size, output_size, normal_size, labels, normals = 0, 0, 0, [], []
-    for r in range(len(structure)):
-        for c in range(len(structure[r])):
-            if structure[r][c] == 1:
-                normal_size += 1
-                normals.append((r, c))
-            elif structure[r][c] == 0:
-                continue
-            elif structure[r][c] == -1:
-                input_size += 1
-                labels.append("I" + str(r) + str(c))
-            elif structure[r][c] == -2:
-                output_size += 1
-                labels.append("O" + str(r) + str(c))
-
-    labels.sort() #this order of labels is very important, so here comes a sorting
-
-    #save the circuit infos into a shared memory variable
-    circuit_info.name = design_name
-    circuit_info.input_size = input_size
-    circuit_info.output_size = output_size
-    circuit_info.normal_size = normal_size
-    circuit_info.labels = labels
-    circuit_info.structure = structure
-
-    #simulate the original circuit and save the other circuit infos
-    benchmark_output_dir = composite_file_name(dbdir, 0)
-    if not os.path.exists(benchmark_output_dir):
-        os.mkdir(benchmark_output_dir)
-
-    args = {"dir_idx": 0, "file_idx": 0, "structure": structure}
-    simulate_circuit(circuit_info, args)
-
-    circuit_info.qca_file_path = args["qca_file_path"]
-    circuit_info.sim_file_path = args["sim_file_path"]
-    circuit_info.truth_table = args["truth_table"]
-    circuit_info.logic_expr = args["logic_expr"]
-
-    #populate the args_list for all the other structures
-    assert(isinstance(args_list, list))
-    args_list.clear()
-
-    for dir_idx in range(1, normal_size+1):
-        cur_output_dir = composite_file_name(dbdir, dir_idx)
-        if not os.path.exists(cur_output_dir):
-            os.mkdir(cur_output_dir)
-
-        combinations = itertools.combinations(normals, dir_idx)
-        file_idx = 0
-        for comb in combinations:
-            cur_structure = copy.deepcopy(structure)
-            for r, c in comb:
-                cur_structure[r][c] = 0
-            args_list.append({"dir_idx": dir_idx, "file_idx": file_idx,
-                              "structure": cur_structure, "missing_indices": comb})
-            file_idx += 1
+    def __call__(self, args):
+        with self.lock:
+            self.lst.append(args)
 
 
 @print_timing
-def simulate_benchmark(benchmark_file_name):
-    circuit_info = multiprocessing.Value(CircuitInfo)
-    args_list = []
-
-    load_benchmark(benchmark_file_name, circuit_info, args_list)
-
+def simulate_benchmark(circuit_info, args_list):
     processes = []
     for args in args_list:
         p = multiprocessing.Process(target=simulate_circuit, args=(circuit_info, args))
@@ -237,5 +313,76 @@ def simulate_benchmark(benchmark_file_name):
     for p in processes:
         p.join()
 
+
+@print_timing
+def simulate_benchmark_with_process_pool(circuit_info, args_list):
+    pool = multiprocessing.Pool(processes=10)
+    # lst = zip([circuit_info for i in range(len(args_list))], args_list)
+
+    # for arg in args_list:
+    #     pool.apply_async(simulate_circuit, args=(circuit_info, arg))
+    # pool.close()
+    # pool.join()
+
+    ret_list = pool.map(simulate_circuit, zip([circuit_info for i in range(len(args_list))], args_list))
+    print(len(ret_list))
+    for args in ret_list:
+        print(args)
+        args["name"] = circuit_info.name
+        SimResult.create(**args)
+
+
+@print_timing
+def generate_statistics(circuit_info):
+    name = circuit_info.name
+    statistics_file_name = composite_file_name(name)
+    statistics_file_name = os.path.join(statistics_file_name, name+".statistics")
+
+    statistics_file = open(statistics_file_name, "w")
+
+    size = circuit_info.normal_size
+    for dir_idx in range(size):
+        sim = SimResult.select(fn.Count().alias("total_count")) \
+            .where(SimResult.name == name, SimResult.dir_idx == dir_idx).get()
+        total_count = sim.total_count
+
+        sim = SimResult.select(fn.Count().alias("error_count")) \
+            .where(SimResult.name == name, SimResult.dir_idx == dir_idx, SimResult.is_correct == False).get()
+        error_count = sim.error_count
+
+        statistics_file.write("Missing Pattern : {0}\n".format(dir_idx))
+        statistics_file.write("Total Number : {0}\n".format(total_count))
+        statistics_file.write("Error Number : {0}\n".format(error_count))
+        statistics_file.write("Error Rate : {0}\n".format(error_count/total_count))
+        statistics_file.write("\n")
+
+        for sim in SimResult.select(SimResult.logic_expr, fn.Count().alias("count")) \
+                .where(SimResult.name == name, SimResult.dir_idx == dir_idx).group_by(SimResult.logic_expr):
+            logic_expr, count = sim.logic_expr, sim.count
+
+            statistics_file.write("Logic exprssion {0} occured {1} times.\n".format(logic_expr, count))
+
+            statistics_file.write("The qca file names for them are as follows :\n")
+            for s in SimResult.select(SimResult.qca_file_path).where(SimResult.name == name,
+                                                                     SimResult.dir_idx == dir_idx,
+                                                                     SimResult.logic_expr == str(logic_expr)):
+                statistics_file.write(s.qca_file_path)
+                statistics_file.write("\n")
+        statistics_file.write("\n========================================================================\n\n")
+
+
 if __name__ == "__main__":
-    simulate_benchmark("/home/fpeng/Workspace/designer-mod/qcamod/benchmark/majority_gate_1.txt")
+    benchmark_file_name = "/home/fpeng/Workspace/designer-mod/qcamod/benchmark/majority_gate_1.txt"
+
+    circuit_info = multiprocessing.Value(CircuitInfo)
+    args_list = []
+
+    load_benchmark(benchmark_file_name, circuit_info, args_list)
+    # print(circuit_info.name)
+    # print(circuit_info.labels)
+    # print(len(args_list))
+    # print(args_list[0])
+
+    # simulate_benchmark(circuit_info, args_list)
+    simulate_benchmark_with_process_pool(circuit_info, args_list)
+    generate_statistics(circuit_info)
