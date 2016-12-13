@@ -63,7 +63,7 @@ def print_timing(func):
         t1 = time.time()
         res = func(*arg)
         t2 = time.time()
-        print('%s took %0.3f ms' % (getattr(func, '__name__'), (t2-t1)*1000.0))
+        print('%s took %0.3f s' % (getattr(func, '__name__'), (t2-t1)))
         return res
     return wrapper
 
@@ -264,16 +264,6 @@ def simulate_circuit(circuit_info, args):
     return args
 
 
-class ManagedArgsUpdater:
-    def __init__(self, lst, lock):
-        self.lst = lst
-        self.lock = lock
-
-    def __call__(self, args):
-        with self.lock:
-            self.lst.append(args)
-
-
 @print_timing
 def simulate_benchmark(circuit_info, args_list):
     pool = multiprocessing.Pool(processes=PROCESS_NUM)
@@ -326,7 +316,7 @@ def generate_statistics(circuit_info):
 
 
 if __name__ == "__main__":
-    benchmark_file_name = "/home/fpeng/Workspace/designer-mod/qcamod/benchmark/majority_gate_1.txt"
+    benchmark_file_name = "../../qcamod/benchmark/majority_gate_1.txt"
 
     circuit_info, args_list = load_benchmark(benchmark_file_name)
     simulate_benchmark(circuit_info, args_list)
