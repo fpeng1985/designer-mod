@@ -3,7 +3,9 @@
 import os
 from peewee import SqliteDatabase
 
-outdir = os.path.join(os.getcwd(), "output")
+OUT_DIR = os.path.join(os.getcwd(), "output")
 
-db = SqliteDatabase(os.path.join(outdir, "qca.db"))
+DB = SqliteDatabase(":memory:")
+
+PROCESS_NUM = 20
 
