@@ -1,23 +1,17 @@
 cmake_minimum_required (VERSION 3.5.1)
 project (designer-mod)
 
-#platform specific settings
-if( CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(CMAKE_C_COMPILER   c:/msys64/mingw64/bin/gcc)
-    set(CMAKE_CXX_COMPILER c:/msys64/mingw64/bin/g++)
-    link_directories(C:/msys64/mingw64/bin C:/msys64/mingw64/lib)
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(BOOST_LIBRARYDIR /usr/lib/x86_64-linux-gnu)
-endif()
+set(CMAKE_CXX_STANDARD 14)
 
-#gtk2
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(GTK2 REQUIRED gtk+-2.0)
-include_directories(${GTK2_INCLUDE_DIRS})
-link_directories(${GTK2_LIBRARY_DIRS})
+
+#gtk+-3.0
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+include_directories(${GTK3_INCLUDE_DIRS})
+link_directories(${GTK3_LIBRARY_DIRS})
 
 #boost
-find_package(Boost COMPONENTS system filesystem program_options REQUIRED)
+find_package(Boost) #COMPONENTS system REQUIRED)
 if(Boost_FOUND)
     include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 else(Boost_FOUND)
@@ -27,6 +21,7 @@ endif(Boost_FOUND)
 #swig
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
+set(CMAKE_SWIG_OUTDIR      ${PROJECT_BINARY_DIR}/bin)
 
 #python
 find_package(PythonLibs 3 REQUIRED)
@@ -36,13 +31,19 @@ include_directories(${PYTHON_INCLUDE_PATH})
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH    ${PROJECT_BINARY_DIR}/bin)
 link_directories(${LIBRARY_OUTPUT_PATH})
-set(CMAKE_SWIG_OUTDIR      ${PROJECT_BINARY_DIR}/bin)
 
 #set compiler flags
-set(CMAKE_C_FLAGS "-mms-bitfields -pthread")
-set(CMAKE_CXX_FLAGS         "$ENV{CXXFLAGS} -Wall -std=c++14")
-set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} -O0 -g -ggdb")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -msse2")
+if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+    set(CMAKE_C_FLAGS "-mms-bitfields -pthread")
+    set(CMAKE_CXX_FLAGS         "$ENV{CXXFLAGS} -Wall")
+    set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} -O0 -g -ggdb")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -msse2")
+endif()
+
+#platform specific settings
+if(WIN32)
+    link_directories(C:/msys64/mingw64/bin C:/msys64/mingw64/lib)
+endif(WIN32)
 
 #program specific settings
 set(UNDO_REDO_FILES
@@ -81,5 +82,5 @@ set(OBJECT_FILES
         )
 
 #sub dirs
-add_subdirectory(src)
 add_subdirectory(qcamod)
+#add_subdirectory(src)
