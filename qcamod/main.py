@@ -10,6 +10,7 @@ import argparse
 import platform
 import shutil
 import threading
+import multiprocessing
 
 import generate_qca_and_sim_from_structure
 import generate_truth_from_sim
@@ -173,8 +174,10 @@ def generate_logic_from_truth(truth_file_name, output_dir):
 
 
 def visit_outdir(outdir, func, appendix):
-    threads = []
+    # threads = []
+    pool = multiprocessing.Pool(processes=10)
 
+    processes = []
     dir_names = os.listdir(outdir)
     for dir_name in dir_names:
         output_dir = os.path.normpath(os.path.join(outdir, dir_name))
@@ -183,15 +186,27 @@ def visit_outdir(outdir, func, appendix):
         needed_files = filter(lambda x: x.endswith(appendix), all_files)
         needed_file_names = [os.path.join(output_dir, needed_file) for needed_file in needed_files]
         for needed_file_name in needed_file_names:
-            threads.append(threading.Thread(target=func,
-                                            args=(os.path.normpath(os.path.abspath(needed_file_name)),
-                                                  os.path.normpath(os.path.abspath(output_dir)))))
-    for thread in threads:
-        thread.start()
+            # pool.apply(func, args=(os.path.normpath(os.path.abspath(needed_file_name)),
+            #                        os.path.normpath(os.path.abspath(output_dir))))
+            # threads.append(threading.Thread(target=func,
+            #                                 args=(os.path.normpath(os.path.abspath(needed_file_name)),
+            #                                       os.path.normpath(os.path.abspath(output_dir)))))
+            processes.append(multiprocessing.Process(target=func,
+                                                     args=(os.path.normpath(os.path.abspath(needed_file_name)),
+                                                           os.path.normpath(os.path.abspath(output_dir)))))
+    # pool.close()
+    # pool.join()
+    # for thread in threads:
+    #     thread.start()
+    #
+    # for thread in threads:
+    #     thread.join()
 
-    for thread in threads:
-        thread.join()
+    for p in processes:
+        p.start()
 
+    for p in processes:
+        p.join()
 
 
 def generate_statistics(benchmark_file_name, outdir):
