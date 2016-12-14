@@ -210,9 +210,6 @@ def load_benchmark(benchmark_file_name):
                               "structure": cur_structure, "missing_indices": comb})
             file_idx += 1
 
-    #create sqlite3 database
-    create_tables()
-
     return circuit_info, args_list
 
 
@@ -272,6 +269,8 @@ def simulate_benchmark(circuit_info, args_list):
     pool.close()
     pool.join()
 
+    #create sqlite3 database
+    create_tables()
     for args in ret_list:
         SimResult.create(**args)
 

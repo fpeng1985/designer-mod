@@ -34,7 +34,9 @@ link_directories(${LIBRARY_OUTPUT_PATH})
 
 #set compiler flags
 if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
-    set(CMAKE_C_FLAGS "-mms-bitfields -pthread")
+    set(CMAKE_C_FLAGS           "-mms-bitfields -pthread")
+    set(CMAKE_C_FLAGS_DEBUG     "${CMAKE_C_FLAGS} -O0")
+    set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS} -O3 -DNDEBUG -msse2")
     set(CMAKE_CXX_FLAGS         "$ENV{CXXFLAGS} -Wall")
     set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} -O0 -g -ggdb")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -msse2")
