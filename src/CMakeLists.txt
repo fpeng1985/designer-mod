@@ -1,5 +1,3 @@
-add_definitions(-DPACKAGE=\"QCADesigner\")
-add_definitions(-DVERSION="2.0.3")
 #########################################################################
 
 set(QCADesigner_SRC

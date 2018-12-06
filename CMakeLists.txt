@@ -84,7 +84,22 @@ set(OBJECT_FILES
         )
 
 
+#compile definitions
+if( CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(PACKAGE_DATA_DIR_VALUE   /mingw64/share)
+    set(PACKAGE_LOCALE_DIR_VALUE /mingw64/share/locale)
+else()
+    set(PACKAGE_DATA_DIR_VALUE   /usr/local/share)
+    set(PACKAGE_LOCALE_DIR_VALUE /usr/local/locale)
+endif()
+add_compile_definitions(
+    VERSION="2.0.3"
+    PACKAGE="QCADesigner"
+    PACKAGE_DATA_DIR="${PACKAGE_DATA_DIR_VALUE}"
+    PACKAGE_LOCALE_DIR="${PACKAGE_LOCALE_DIR_VALUE}"
+    PACKAGE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+    )
+
 #sub dirs
 add_subdirectory(qcamod)
-add_compile_definitions(PACKAGE_DATA_DIR="/usr/local/share" PACKAGE_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
 add_subdirectory(src)
