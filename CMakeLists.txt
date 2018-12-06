@@ -5,10 +5,10 @@ set(CMAKE_CXX_STANDARD 14)
 
 find_package(PkgConfig REQUIRED)
 
-#gtk+-3.0
-pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-include_directories(${GTK3_INCLUDE_DIRS})
-link_directories(${GTK3_LIBRARY_DIRS})
+#gtk+-2.0
+pkg_check_modules(GTK2 REQUIRED gtk+-2.0)
+include_directories(${GTK2_INCLUDE_DIRS})
+link_directories(${GTK2_LIBRARY_DIRS})
 
 #boost
 find_package(Boost) #COMPONENTS system REQUIRED)
@@ -83,6 +83,8 @@ set(OBJECT_FILES
         ${PROJECT_SOURCE_DIR}/src/objects/QCADSubstrate.h
         )
 
+add_compile_definitions("PACKAGE_DATA_DIR=${PROJECT_BINARY_DIR}/share;PACKAGE_SOURCE_DIR=${PROJECT_SOURCE_DIR}")
+
 #sub dirs
 add_subdirectory(qcamod)
-#add_subdirectory(src)
+add_subdirectory(src)

@@ -22,7 +22,7 @@ from config import *
 ########################################################################################
 
 class ListField(Field):
-    db_field = 'list'
+    field_type = 'list'
 
     def db_value(self, value):
         return str(value)
@@ -30,7 +30,7 @@ class ListField(Field):
     def python_value(self, value):
         return eval(value)
 
-SqliteDatabase.register_fields({'list': 'list'})
+#SqliteDatabase.register_fields({'list': 'list'})
 
 
 class SimResult(Model):
