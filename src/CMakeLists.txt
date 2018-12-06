@@ -76,7 +76,7 @@ set(QCADesigner_SRC
         main.c
         )
 add_executable(QCADesigner ${QCADesigner_SRC})
-target_link_libraries(QCADesigner ${GTK2_LIBRARIES})
+target_link_libraries(QCADesigner ${GTK2_LIBRARIES} m)
 target_compile_definitions(QCADesigner PUBLIC -DSTDIO_FILEIO -DUNDO_REDO -DGTK_GUI -DDESIGNER)
 
 #########################################################################
@@ -106,7 +106,7 @@ set(batch_sim_SRC
         )
 
 add_executable(batch_sim ${batch_sim_SRC})
-target_link_libraries(batch_sim ${GTK2_LIBRARIES})
+target_link_libraries(batch_sim ${GTK2_LIBRARIES} m)
 target_compile_definitions(batch_sim PUBLIC -DSTDIO_FILEIO)
 
 #########################################################################
@@ -147,7 +147,7 @@ set(graph_dialog_SRC
 
 add_executable(graph_dialog ${graph_dialog_SRC})
 target_compile_definitions(graph_dialog PUBLIC -DSTDIO_FILEIO -DGTK_GUI)
-target_link_libraries(graph_dialog ${GTK2_LIBRARIES})
+target_link_libraries(graph_dialog ${GTK2_LIBRARIES} m)
 
 #########################################################################
 

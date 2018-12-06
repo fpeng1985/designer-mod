@@ -83,8 +83,8 @@ set(OBJECT_FILES
         ${PROJECT_SOURCE_DIR}/src/objects/QCADSubstrate.h
         )
 
-add_compile_definitions("PACKAGE_DATA_DIR=${PROJECT_BINARY_DIR}/share;PACKAGE_SOURCE_DIR=${PROJECT_SOURCE_DIR}")
 
 #sub dirs
 add_subdirectory(qcamod)
+add_compile_definitions(PACKAGE_DATA_DIR="/usr/local/share" PACKAGE_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
 add_subdirectory(src)
